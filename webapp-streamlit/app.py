@@ -171,6 +171,15 @@ st.markdown(f"""
     }}
 
     /* Download Button */
+    div[data-testid="stDownloadButton"] {{
+        margin-top: 18px !important;
+        margin-bottom: 14px !important;
+        clear: both !important;
+        display: block !important;
+        position: relative !important;
+        z-index: 10 !important;
+    }}
+
     div[data-testid="stDownloadButton"]>button {{
         background-color: rgba(16, 185, 129, 0.12) !important;
         color: #10b981 !important;
@@ -276,10 +285,18 @@ st.markdown(f"""
         color: inherit !important;
     }}
 
+    /* Columns Relative Anchor (So absolute children stay inside their respective column) */
+    div[data-testid="stColumn"] {{
+        position: relative !important;
+    }}
+
     /* Table (stDataFrame) Styling */
     div[data-testid="stDataFrame"] {{
         border-radius: 10px !important;
         border: 1px solid {border_color} !important;
+        margin-bottom: 20px !important;
+        clear: both !important;
+        position: relative !important;
     }}
 
     /* Target the resizable table grid for dark mode inversion without touching internal canvas DOM */
@@ -288,34 +305,31 @@ st.markdown(f"""
         border-radius: 8px !important;
     }}
 
-    /* Element Toolbar (Micro-sized, Sleek Pill, Positioned Above Table - Zero Data Blocking) */
+    /* Element Toolbar (Positioned in Empty Space Directly Under Tools Toggle) */
     div[data-testid="stElementToolbar"],
     .stElementToolbar,
     div[data-testid="stElementToolbarButtonContainer"] {{
-        opacity: 0.35 !important;
+        opacity: 0.9 !important;
         visibility: visible !important;
         display: {'flex' if show_tools else 'none'} !important;
         align-items: center !important;
         gap: 2px !important;
-        background-color: {'rgba(30, 41, 59, 0.85)' if is_dark else 'rgba(255, 255, 255, 0.95)'} !important;
-        backdrop-filter: blur(8px) !important;
+        background-color: {'#1e293b' if is_dark else '#ffffff'} !important;
         border: 1px solid {'#334155' if is_dark else '#cbd5e1'} !important;
         border-radius: 6px !important;
         padding: 2px 4px !important;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
         filter: none !important;
-        z-index: 100 !important;
+        z-index: 99 !important;
         position: absolute !important;
-        top: -32px !important;
+        top: 36px !important;
         right: 0px !important;
-        transition: opacity 0.2s ease, transform 0.15s ease !important;
+        transition: border-color 0.2s ease, opacity 0.2s ease !important;
     }}
 
-    /* Glow to Full Opacity on Hover */
-    div[data-testid="stDataFrame"]:hover div[data-testid="stElementToolbar"],
     div[data-testid="stElementToolbar"]:hover {{
         opacity: 1 !important;
-        transform: translateY(-1px) !important;
+        border-color: #10b981 !important;
     }}
 
     div[data-testid="stElementToolbarButton"],
@@ -637,13 +651,16 @@ with col_left:
     table_df.index = np.arange(1, len(table_df) + 1)
     st.dataframe(table_df, use_container_width=True, height=480)
 
+    st.markdown("<div style='height: 18px; clear: both;'></div>", unsafe_allow_html=True)
+
     # Download CSV
     csv_data = df_display.to_csv(index=False).encode('utf-8-sig')
     st.download_button(
         label="📥 ดาวน์โหลดรายงานฉบับเต็ม (CSV)",
         data=csv_data,
         file_name=f"thailand_green_energy_ranking_{'ev' if is_ev_mode else 'solar'}.csv",
-        mime="text/csv"
+        mime="text/csv",
+        use_container_width=True
     )
 
 # ---------- RIGHT COLUMN: Deep Dive & Details ----------
