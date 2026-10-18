@@ -272,53 +272,124 @@ st.markdown(f"""
         color: inherit !important;
     }}
 
-    /* Table (stDataFrame) Dark Mode Inversion & Styling */
+    /* Table Container Styling (Always Clean Void-Black in Dark Mode) */
+    div[data-testid="stDataFrame"],
+    div[data-testid="stDataFrame"] > div,
+    div[data-testid="stDataFrameResizable"],
+    div[data-testid="stDataFrameGlideDataEditor"],
+    div[data-testid="stDataFrame"] .dvn-scroller,
+    div[data-testid="stDataFrame"] .dvn-stack {{
+        background-color: {bg_card} !important;
+        background: {bg_card} !important;
+        border-color: {border_color} !important;
+    }}
+
     div[data-testid="stDataFrame"] {{
-        {'filter: invert(0.92) hue-rotate(180deg) brightness(0.95) contrast(1.05) !important;' if is_dark else 'filter: none !important;'}
         border-radius: 10px !important;
         border: 1px solid {border_color} !important;
-        background-color: {bg_card} !important;
     }}
 
+    /* Only Invert Canvas Grid Cells in Dark Mode: cells become dark, but container, empty space & toolbar stay normal! */
     div[data-testid="stDataFrame"] canvas {{
+        {'filter: invert(0.92) hue-rotate(180deg) brightness(0.95) contrast(1.05) !important;' if is_dark else 'filter: none !important;'}
         border-radius: 8px !important;
+        background-color: transparent !important;
     }}
 
-    /* Element Toolbar (stDataFrame & Charts Buttons: Fullscreen, CSV Download, Search) */
+    /* Element Toolbar (stDataFrame & Charts Buttons: Fullscreen, CSV Download, Search, Show/Hide Columns) */
     div[data-testid="stElementToolbar"],
-    .stElementToolbar {{
+    .stElementToolbar,
+    div[data-testid="stElementToolbarButtonContainer"] {{
         opacity: 1 !important;
         visibility: visible !important;
         display: flex !important;
-        background-color: {bg_card} !important;
-        border: 1px solid {border_color} !important;
+        align-items: center !important;
+        gap: 3px !important;
+        background-color: {'#1e293b' if is_dark else '#ffffff'} !important;
+        border: 1px solid {'#334155' if is_dark else '#cbd5e1'} !important;
         border-radius: 8px !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+        padding: 4px 6px !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+        filter: none !important;
+        z-index: 100 !important;
     }}
 
+    div[data-testid="stElementToolbarButton"],
+    div[data-testid="stElementToolbarButton"] button,
     div[data-testid="stElementToolbar"] button,
     .stElementToolbar button {{
         background-color: transparent !important;
         color: {text_main} !important;
+        opacity: 1 !important;
         border: none !important;
+        border-radius: 6px !important;
+        padding: 5px 7px !important;
+        cursor: pointer !important;
+        filter: none !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }}
 
-    div[data-testid="stElementToolbar"] button svg,
-    .stElementToolbar button svg {{
-        fill: {text_main} !important;
-        color: {text_main} !important;
-    }}
-
+    div[data-testid="stElementToolbarButton"] button:hover,
     div[data-testid="stElementToolbar"] button:hover,
     .stElementToolbar button:hover {{
-        background-color: {'#1d2433' if is_dark else '#f1f5f9'} !important;
+        background-color: {'#334155' if is_dark else '#f1f5f9'} !important;
         color: #10b981 !important;
     }}
 
-    /* Fullscreen Modal & Containers (Expanded Charts, Radar, PCA 2D, Tables) */
+    div[data-testid="stElementToolbarButton"] svg,
+    div[data-testid="stElementToolbar"] button svg,
+    .stElementToolbar button svg,
+    [data-testid="stElementToolbarButtonIcon"] {{
+        fill: {text_main} !important;
+        color: {text_main} !important;
+        stroke: {text_main} !important;
+        filter: none !important;
+        opacity: 1 !important;
+        width: 17px !important;
+        height: 17px !important;
+    }}
+
+    div[data-testid="stElementToolbarButton"] button:hover svg,
+    div[data-testid="stElementToolbar"] button:hover svg {{
+        fill: #10b981 !important;
+        color: #10b981 !important;
+        stroke: #10b981 !important;
+    }}
+
+    /* Tooltip Popover (Fix: BaseWeb Tooltip - Crisp Dark Bubble, White Text) */
+    div[data-baseweb="tooltip"],
+    div[data-baseweb="tooltip"] > div,
+    div[role="tooltip"],
+    div[role="tooltip"] > div,
+    [data-testid="stTooltipContent"] {{
+        background-color: #0f172a !important;
+        color: #ffffff !important;
+        border: 1px solid #334155 !important;
+        border-radius: 6px !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6) !important;
+        font-size: 12px !important;
+        font-weight: 500 !important;
+        filter: none !important;
+    }}
+
+    div[data-baseweb="tooltip"] *,
+    div[role="tooltip"] *,
+    [data-testid="stTooltipContent"] * {{
+        color: #ffffff !important;
+        background-color: transparent !important;
+    }}
+
+    /* Fullscreen Modal & Containers (Fix: Expanded Table empty bottom space & charts are Void-Black) */
     div[data-testid="stFullScreenFrame"],
     div[data-testid="stFullScreenFrame"] > div,
     div[data-testid="stFullScreenFrame"] section,
+    div[data-testid="stFullScreenFrame"] [data-testid="stDataFrame"],
+    div[data-testid="stFullScreenFrame"] [data-testid="stDataFrameResizable"],
+    div[data-testid="stFullScreenFrame"] [data-testid="stDataFrameGlideDataEditor"],
+    div[data-testid="stFullScreenFrame"] .dvn-scroller,
+    div[data-testid="stFullScreenFrame"] .dvn-stack,
     div[data-testid="stFullScreenFrame"] [data-testid="stPlotlyChart"],
     div[data-testid="stFullScreenFrame"] .js-plotly-plot,
     div[data-testid="stFullScreenFrame"] .plot-container,
