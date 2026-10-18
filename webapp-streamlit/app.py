@@ -272,28 +272,16 @@ st.markdown(f"""
         color: inherit !important;
     }}
 
-    /* Table Container Styling (Always Clean Void-Black in Dark Mode) */
-    div[data-testid="stDataFrame"],
-    div[data-testid="stDataFrame"] > div,
-    div[data-testid="stDataFrameResizable"],
-    div[data-testid="stDataFrameGlideDataEditor"],
-    div[data-testid="stDataFrame"] .dvn-scroller,
-    div[data-testid="stDataFrame"] .dvn-stack {{
-        background-color: {bg_card} !important;
-        background: {bg_card} !important;
-        border-color: {border_color} !important;
-    }}
-
+    /* Table (stDataFrame) Styling */
     div[data-testid="stDataFrame"] {{
         border-radius: 10px !important;
         border: 1px solid {border_color} !important;
     }}
 
-    /* Only Invert Canvas Grid Cells in Dark Mode: cells become dark, but container, empty space & toolbar stay normal! */
-    div[data-testid="stDataFrame"] canvas {{
+    /* Target the resizable table grid for dark mode inversion without touching internal canvas DOM */
+    div[data-testid="stDataFrameResizable"] {{
         {'filter: invert(0.92) hue-rotate(180deg) brightness(0.95) contrast(1.05) !important;' if is_dark else 'filter: none !important;'}
         border-radius: 8px !important;
-        background-color: transparent !important;
     }}
 
     /* Element Toolbar (stDataFrame & Charts Buttons: Fullscreen, CSV Download, Search, Show/Hide Columns) */
@@ -381,15 +369,10 @@ st.markdown(f"""
         background-color: transparent !important;
     }}
 
-    /* Fullscreen Modal & Containers (Fix: Expanded Table empty bottom space & charts are Void-Black) */
+    /* Fullscreen Modal & Containers (Expanded Charts, Radar, PCA 2D, Tables) */
     div[data-testid="stFullScreenFrame"],
     div[data-testid="stFullScreenFrame"] > div,
     div[data-testid="stFullScreenFrame"] section,
-    div[data-testid="stFullScreenFrame"] [data-testid="stDataFrame"],
-    div[data-testid="stFullScreenFrame"] [data-testid="stDataFrameResizable"],
-    div[data-testid="stFullScreenFrame"] [data-testid="stDataFrameGlideDataEditor"],
-    div[data-testid="stFullScreenFrame"] .dvn-scroller,
-    div[data-testid="stFullScreenFrame"] .dvn-stack,
     div[data-testid="stFullScreenFrame"] [data-testid="stPlotlyChart"],
     div[data-testid="stFullScreenFrame"] .js-plotly-plot,
     div[data-testid="stFullScreenFrame"] .plot-container,
