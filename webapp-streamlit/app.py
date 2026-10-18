@@ -1,6 +1,6 @@
 """
 Thailand Green Energy & EV Site Selection Planner
-Streamlit Web Application - Pure Clean UI (Matching HTML Design)
+Streamlit Web Application - Harmonious VoltAgent Dual Theme (Light & Dark)
 """
 
 import os
@@ -11,7 +11,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from business_engine import calculate_business_scores
 
-# 1. Page Configuration (Hide sidebar, full width)
+# 1. Page Configuration (Full width, no sidebar)
 st.set_page_config(
     page_title="Thailand Green Energy & EV Planner",
     page_icon="⚡",
@@ -19,44 +19,174 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom Styling (Fonts & Clean Cards)
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
-    html, body, [class*="css"] {
-        font-family: 'Kanit', sans-serif;
-    }
-    /* Hide Sidebar Completely */
-    [data-testid="stSidebar"], [data-testid="collapsedControl"] {
-        display: none !important;
-    }
-    .stButton>button {
-        border-radius: 8px;
-    }
-    div[data-testid="stMetric"] {
-        background-color: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        padding: 14px 18px;
-    }
-    div[data-testid="stDownloadButton"]>button {
-        width: 100%;
-        border-radius: 8px;
-    }
-</style>
-""", unsafe_allow_html=True)
+# 2. Session State Initialization
+if "theme_mode" not in st.session_state:
+    st.session_state["theme_mode"] = "light"  # Default: Light mode
 
-# Session State for Business Mode and Cluster Filter
 if "business_mode" not in st.session_state:
-    st.session_state["business_mode"] = "EV"
+    st.session_state["business_mode"] = "EV"  # 'EV' or 'SOLAR'
 
 if "cluster_filter" not in st.session_state:
-    st.session_state["cluster_filter"] = "ALL"
+    st.session_state["cluster_filter"] = "ALL"  # 'ALL', '2', '1', '0'
 
+is_dark = st.session_state["theme_mode"] == "dark"
 is_ev_mode = st.session_state["business_mode"] == "EV"
 active_filter = st.session_state["cluster_filter"]
 
-# 2. Load & Cache Dataset
+# Theme Tokens
+if is_dark:
+    bg_app = "#090a0f"
+    bg_card = "#11141c"
+    bg_card_inner = "#171b26"
+    border_color = "#1f2637"
+    text_main = "#f8fafc"
+    text_sub = "#94a3b8"
+    text_muted = "#64748b"
+    btn_sec_bg = "#161b26"
+    btn_sec_text = "#cbd5e1"
+    btn_sec_border = "#262f42"
+    plotly_grid = "#1c2230"
+    radar_nat_color = "#64748b"
+    radar_nat_fill = "rgba(100, 116, 139, 0.2)"
+else:
+    bg_app = "#f8fafc"
+    bg_card = "#ffffff"
+    bg_card_inner = "#f1f5f9"
+    border_color = "#e2e8f0"
+    text_main = "#0f172a"
+    text_sub = "#334155"
+    text_muted = "#64748b"
+    btn_sec_bg = "#ffffff"
+    btn_sec_text = "#334155"
+    btn_sec_border = "#cbd5e1"
+    plotly_grid = "#e2e8f0"
+    radar_nat_color = "#94a3b8"
+    radar_nat_fill = "rgba(148, 163, 184, 0.2)"
+
+# Dynamic Theme CSS (Guaranteed: NO red buttons, NO mismatched card colors)
+st.markdown(f"""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    html, body, [class*="css"] {{
+        font-family: 'Kanit', sans-serif;
+    }}
+
+    /* Hide Sidebar Completely */
+    [data-testid="stSidebar"], [data-testid="collapsedControl"] {{
+        display: none !important;
+    }}
+
+    /* Global App Background & Text */
+    .stApp {{
+        background-color: {bg_app} !important;
+        color: {text_main} !important;
+    }}
+
+    /* All Headings & Paragraphs */
+    h1, h2, h3, h4, h5, h6, p, span, label {{
+        color: {text_main} !important;
+    }}
+
+    /* Metric Cards: Synchronized Background & Text */
+    div[data-testid="stMetric"] {{
+        background-color: {bg_card} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 14px !important;
+        padding: 14px 18px !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+    }}
+
+    div[data-testid="stMetricLabel"] {{
+        color: {text_muted} !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+    }}
+
+    div[data-testid="stMetricValue"] {{
+        color: {text_main} !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-weight: 700 !important;
+        font-size: 26px !important;
+    }}
+
+    div[data-testid="stMetricDelta"] {{
+        color: #10b981 !important;
+        font-weight: 600 !important;
+    }}
+
+    /* Override Primary Buttons: ALWAYS Emerald Green (NEVER Red) */
+    button[kind="primary"], .stButton>button[kind="primary"] {{
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        color: #ffffff !important;
+        border: 1px solid #10b981 !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
+    }}
+
+    /* Secondary Buttons: Clean Neutral */
+    button[kind="secondary"], .stButton>button[kind="secondary"] {{
+        background-color: {btn_sec_bg} !important;
+        color: {btn_sec_text} !important;
+        border: 1px solid {btn_sec_border} !important;
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+    }}
+
+    button[kind="secondary"]:hover, .stButton>button[kind="secondary"]:hover {{
+        border-color: #10b981 !important;
+        color: #10b981 !important;
+    }}
+
+    /* Download Button */
+    div[data-testid="stDownloadButton"]>button {{
+        background-color: rgba(16, 185, 129, 0.12) !important;
+        color: #10b981 !important;
+        border: 1px solid rgba(16, 185, 129, 0.35) !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        width: 100% !important;
+    }}
+
+    div[data-testid="stDownloadButton"]>button:hover {{
+        background-color: #10b981 !important;
+        color: #ffffff !important;
+    }}
+
+    /* Input Box */
+    input, .stTextInput>div>div>input {{
+        background-color: {bg_card} !important;
+        color: {text_main} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 8px !important;
+    }}
+
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {{
+        gap: 6px;
+        background-color: {bg_card};
+        padding: 4px;
+        border-radius: 10px;
+        border: 1px solid {border_color};
+    }}
+
+    .stTabs [data-baseweb="tab"] {{
+        border-radius: 6px;
+        padding: 6px 14px;
+        color: {text_sub};
+        font-weight: 500;
+    }}
+
+    .stTabs [aria-selected="true"] {{
+        background-color: #10b981 !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+    }}
+</style>
+""", unsafe_allow_html=True)
+
+# 3. Load & Cache Dataset
 @st.cache_data
 def load_data():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -69,38 +199,46 @@ def load_data():
 
 df_all = load_data()
 
-# 3. Top Header (Logo + Title on Left, Business Mode Buttons on Right)
-col_hdr_left, col_hdr_right = st.columns([7, 5])
+# 4. Top Header (Logo + Title on Left | Business Mode & Theme Switch on Right)
+col_hdr_left, col_hdr_right = st.columns([6, 6])
 
 with col_hdr_left:
-    st.markdown("""
-<div style="display:flex; align-items:center; gap:12px;">
-    <div style="width:46px; height:46px; border-radius:12px; background:linear-gradient(135deg, #10b981 0%, #059669 100%); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(16,185,129,0.3); flex-shrink:0;">
-        <span style="font-size:24px; color:#ffffff;">⚡</span>
-    </div>
-    <div>
-        <h2 style="margin:0; font-size:20px; font-weight:700; line-height:1.2;">Thailand Green Energy & EV Planner</h2>
-        <p style="margin:2px 0 0 0; font-size:12px; color:#64748b;">ระบบวางแผนธุรกิจพลังงานสะอาดและทำเลสถานีชาร์จจากผลลัพธ์ K-Means (77 จังหวัด)</p>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+    st.markdown(f"""
+        <div style="display:flex; align-items:center; gap:12px; padding:4px 0;">
+            <div style="width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg, #10b981 0%, #059669 100%); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(16,185,129,0.35); flex-shrink:0;">
+                <span style="font-size:22px; color:#ffffff;">⚡</span>
+            </div>
+            <div>
+                <h2 style="margin:0; font-size:20px; font-weight:700; color:{text_main}; line-height:1.2;">Thailand Green Energy & EV Planner</h2>
+                <p style="margin:2px 0 0 0; font-size:12px; color:{text_muted};">ระบบวางแผนธุรกิจพลังงานสะอาดและทำเลสถานีชาร์จจากผลลัพธ์ K-Means (77 จังหวัด)</p>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
 with col_hdr_right:
-    col_b1, col_b2 = st.columns(2)
+    col_b1, col_b2, col_th = st.columns([3, 3, 2.5])
+    
     with col_b1:
         btn_ev_type = "primary" if is_ev_mode else "secondary"
         if st.button("⚡ สถานีชาร์จ EV", key="btn_ev", type=btn_ev_type, use_container_width=True):
             st.session_state["business_mode"] = "EV"
             st.rerun()
+            
     with col_b2:
         btn_sol_type = "primary" if not is_ev_mode else "secondary"
         if st.button("☀️ โซลาร์รูฟท็อป", key="btn_sol", type=btn_sol_type, use_container_width=True):
             st.session_state["business_mode"] = "SOLAR"
             st.rerun()
 
+    with col_th:
+        th_label = "☀️ โหมดสว่าง" if is_dark else "🌙 โหมดมืด"
+        if st.button(th_label, key="btn_theme_toggle", type="secondary", use_container_width=True):
+            st.session_state["theme_mode"] = "light" if is_dark else "dark"
+            st.rerun()
+
 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
-# 4. Filter Data based on Active Cluster Filter
+# 5. Filter Data based on Active Cluster Filter
 if active_filter == "ALL":
     df_filtered = df_all.copy()
 else:
@@ -111,7 +249,7 @@ if is_ev_mode:
 else:
     df_filtered = df_filtered.sort_values(by="SOLAR_SCORE", ascending=False).reset_index(drop=True)
 
-# 5. 4 KPI Metrics Row
+# 6. 4 KPI Metrics Row
 col_kpi1, col_kpi2, col_kpi3, col_kpi4 = st.columns(4)
 
 with col_kpi1:
@@ -149,12 +287,12 @@ with col_kpi4:
 
 st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
-# 6. Main 2-Column Section (Table on Left, Deep Dive & Charts on Right)
+# 7. Main 2-Column Section (Table on Left, Deep Dive & Charts on Right)
 col_left, col_right = st.columns([5, 7])
 
 # ---------- LEFT COLUMN: Table & Cluster Filter Pills ----------
 with col_left:
-    st.markdown(f"### 📋 ตารางจัดอันดับความคุ้มค่า 77 จังหวัด")
+    st.markdown(f"<h3 style='margin:0 0 2px 0; font-size:16px; font-weight:700;'>📋 ตารางจัดอันดับความคุ้มค่า 77 จังหวัด</h3>", unsafe_allow_html=True)
     st.caption(f"แสดง {len(df_filtered)} จาก 77 จังหวัด")
 
     # Search Box
@@ -167,7 +305,7 @@ with col_left:
     # Cluster Filter Horizontal Pills
     c_lbl, c_all, c_c2, c_c1, c_c0 = st.columns([1.1, 1.6, 2.3, 2.3, 2.2])
     with c_lbl:
-        st.markdown("<div style='padding-top:6px; font-size:12px; color:#64748b;'>กลุ่ม:</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='padding-top:6px; font-size:12px; color:{text_muted};'>กลุ่ม:</div>", unsafe_allow_html=True)
     with c_all:
         if st.button("ทั้งหมด", key="btn_f_all", type="primary" if active_filter == "ALL" else "secondary", use_container_width=True):
             st.session_state["cluster_filter"] = "ALL"
@@ -230,7 +368,7 @@ with col_right:
     # Header Card with Selected Province Details
     c_p_info, c_p_score = st.columns([8, 4])
     with c_p_info:
-        st.markdown(f"### 📍 {prov_row['CC-DESC']} ({prov_row['PROVINCE_CLEAN']})")
+        st.markdown(f"<h3 style='margin:0; font-size:20px; font-weight:700;'>📍 {prov_row['CC-DESC']} ({prov_row['PROVINCE_CLEAN']})</h3>", unsafe_allow_html=True)
         st.caption(f"กลุ่ม: {prov_row['CLUSTER_NAME']}")
     with c_p_score:
         st.metric(
@@ -239,7 +377,7 @@ with col_right:
             delta=prov_row["EV_TIER"] if is_ev_mode else f"คืนทุน ~{prov_row['SOLAR_PAYBACK_YEARS']} ปี"
         )
 
-    # Clean Strategic Advice (Using Native Streamlit Boxes)
+    # Clean Strategic Advice (Native Components - Zero Raw Code Leaks)
     if is_ev_mode:
         st.success(f"🔌 **หัวชาร์จแนะนำ:** {prov_row['CHARGER_TECH']}")
         st.info(f"📍 **ทำเลเป้าหมาย:** {prov_row['TARGET_LOCATIONS']}")
@@ -247,7 +385,7 @@ with col_right:
         st.success(f"☀️ **ระยะเวลาคืนทุนโดยประมาณ:** {prov_row['SOLAR_PAYBACK_YEARS']} ปี")
         st.info("💡 **ความคุ้มค่า:** เหมาะสำหรับบ้านเดี่ยว/ที่อยู่อาศัยที่ใช้เครื่องปรับอากาศช่วงกลางวัน")
 
-    # 4 Core Statistics (Using Native Columns)
+    # 4 Core Statistics
     s1, s2, s3, s4 = st.columns(4)
     with s1:
         st.metric("ค่าไฟบ้าน/หลัง", f"{prov_row['ELEC_PER_HOUSE']:,.0f} kWh")
@@ -258,7 +396,7 @@ with col_right:
     with s4:
         st.metric("ขนาดครัวเรือน", f"{prov_row['AVG_HOUSEHOLD_SIZE']} คน/บ้าน")
 
-    st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
     # Sub-tabs for Charts and Simulation
     tab_radar, tab_bar, tab_whatif, tab_pca = st.tabs([
@@ -294,8 +432,8 @@ with col_right:
             theta=categories,
             fill='toself',
             name='ค่าเฉลี่ยประเทศ',
-            line_color='#94a3b8',
-            fillcolor='rgba(148, 163, 184, 0.2)'
+            line_color=radar_nat_color,
+            fillcolor=radar_nat_fill
         ))
         fig_radar.add_trace(go.Scatterpolar(
             r=prov_values,
@@ -308,12 +446,13 @@ with col_right:
 
         fig_radar.update_layout(
             polar=dict(
-                radialaxis=dict(visible=True, range=[0, 100]),
+                radialaxis=dict(visible=True, range=[0, 100], color=text_muted, gridcolor=plotly_grid),
+                angularaxis=dict(color=text_sub, gridcolor=plotly_grid),
                 bgcolor="rgba(0,0,0,0)"
             ),
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(family="Kanit"),
+            font=dict(family="Kanit", color=text_main),
             showlegend=True,
             legend=dict(orientation="h", y=-0.12, x=0.2),
             height=360,
@@ -337,10 +476,11 @@ with col_right:
             text=score_col
         )
         fig_bar.update_layout(
-            yaxis=dict(autorange="reversed"),
+            yaxis=dict(autorange="reversed", color=text_sub),
+            xaxis=dict(color=text_sub, gridcolor=plotly_grid),
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(family="Kanit"),
+            font=dict(family="Kanit", color=text_main),
             height=360,
             margin=dict(l=0, r=0, t=10, b=0),
             showlegend=False
@@ -400,7 +540,9 @@ with col_right:
         fig_pca.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(family="Kanit"),
+            font=dict(family="Kanit", color=text_main),
+            xaxis=dict(gridcolor=plotly_grid, color=text_muted),
+            yaxis=dict(gridcolor=plotly_grid, color=text_muted),
             height=360,
             margin=dict(l=20, r=20, t=10, b=10),
             legend=dict(orientation="h", y=-0.2)
