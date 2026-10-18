@@ -170,14 +170,15 @@ st.markdown(f"""
         color: #10b981 !important;
     }}
 
-    /* Download Button */
+    /* Download Button - Positioned clearly below table without overlapping */
     div[data-testid="stDownloadButton"] {{
-        margin-top: 18px !important;
-        margin-bottom: 14px !important;
+        margin-top: 10px !important;
+        margin-bottom: 16px !important;
         clear: both !important;
         display: block !important;
         position: relative !important;
         z-index: 10 !important;
+        width: 100% !important;
     }}
 
     div[data-testid="stDownloadButton"]>button {{
@@ -286,26 +287,34 @@ st.markdown(f"""
     }}
 
     /* Columns Relative Anchor (So absolute children stay inside their respective column) */
-    div[data-testid="stColumn"] {{
+    div[data-testid="column"],
+    [data-testid="column"],
+    .stColumn {{
         position: relative !important;
     }}
 
-    /* Table (stDataFrame) Styling */
+    /* Table (stDataFrame) Styling - Rigid height constraints prevent container collapse */
     div[data-testid="stDataFrame"] {{
         border-radius: 10px !important;
         border: 1px solid {border_color} !important;
-        margin-bottom: 20px !important;
+        margin-bottom: 16px !important;
         clear: both !important;
-        position: relative !important;
+        position: static !important;
+        min-height: 484px !important;
+        display: block !important;
+        width: 100% !important;
     }}
 
     /* Target the resizable table grid for dark mode inversion without touching internal canvas DOM */
     div[data-testid="stDataFrameResizable"] {{
         {'filter: invert(0.92) hue-rotate(180deg) brightness(0.95) contrast(1.05) !important;' if is_dark else 'filter: none !important;'}
         border-radius: 8px !important;
+        height: 480px !important;
+        min-height: 480px !important;
+        width: 100% !important;
     }}
 
-    /* Element Toolbar (Positioned in Empty Space Directly Under Tools Toggle) */
+    /* Element Toolbar (Positioned in Empty Space Directly Under Tools Toggle inside Left Column) */
     div[data-testid="stElementToolbar"],
     .stElementToolbar,
     div[data-testid="stElementToolbarButtonContainer"] {{
@@ -418,16 +427,19 @@ st.markdown(f"""
     div[data-testid="stFullScreenFrame"] div[data-testid="stDataFrame"] {{
         height: 100vh !important;
         max-height: 100vh !important;
+        min-height: 100vh !important;
         width: 100vw !important;
         display: flex !important;
         flex-direction: column !important;
         padding: 0 !important;
         margin: 0 !important;
+        position: relative !important;
     }}
 
     div[data-testid="stFullScreenFrame"] div[data-testid="stDataFrameResizable"] {{
         height: 100% !important;
         max-height: 100vh !important;
+        min-height: 100vh !important;
         width: 100% !important;
         flex: 1 1 auto !important;
     }}
@@ -440,6 +452,10 @@ st.markdown(f"""
     div[data-testid="stFullScreenFrame"] div[data-testid="stElementToolbar"] {{
         top: 10px !important;
         right: 14px !important;
+        position: absolute !important;
+        display: flex !important;
+        opacity: 0.9 !important;
+        z-index: 999999 !important;
     }}
 
     /* Alerts (st.success, st.info) */
@@ -589,7 +605,7 @@ col_left, col_right = st.columns([5, 7])
 
 # ---------- LEFT COLUMN: Table & Cluster Filter Pills ----------
 with col_left:
-    c_tbl_title, c_tbl_toggle = st.columns([6.8, 3.2])
+    c_tbl_title, c_tbl_toggle = st.columns([6.2, 3.8])
     with c_tbl_title:
         st.markdown(f"<h3 style='margin:0 0 2px 0; font-size:16px; font-weight:700;'>📋 ตารางจัดอันดับความคุ้มค่า 77 จังหวัด</h3>", unsafe_allow_html=True)
         st.caption(f"แสดง {len(df_filtered)} จาก 77 จังหวัด")
@@ -598,6 +614,8 @@ with col_left:
         if toggle_val != st.session_state["show_table_tools"]:
             st.session_state["show_table_tools"] = toggle_val
             st.rerun()
+        if show_tools:
+            st.markdown("<div style='height: 26px;'></div>", unsafe_allow_html=True)
 
     # Search Box
     search_query = st.text_input("ค้นหาชื่อจังหวัด:", "", placeholder="🔍 ค้นหา เช่น นนทบุรี, ระยอง, เชียงใหม่...", label_visibility="collapsed")
@@ -649,19 +667,22 @@ with col_left:
 
     table_df = df_display[show_cols].rename(columns=rename_dict)
     table_df.index = np.arange(1, len(table_df) + 1)
-    st.dataframe(table_df, use_container_width=True, height=480)
+    
+    with st.container():
+        st.dataframe(table_df, use_container_width=True, height=480)
 
-    st.markdown("<div style='height: 18px; clear: both;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
 
     # Download CSV
-    csv_data = df_display.to_csv(index=False).encode('utf-8-sig')
-    st.download_button(
-        label="📥 ดาวน์โหลดรายงานฉบับเต็ม (CSV)",
-        data=csv_data,
-        file_name=f"thailand_green_energy_ranking_{'ev' if is_ev_mode else 'solar'}.csv",
-        mime="text/csv",
-        use_container_width=True
-    )
+    with st.container():
+        csv_data = df_display.to_csv(index=False).encode('utf-8-sig')
+        st.download_button(
+            label="📥 ดาวน์โหลดรายงานฉบับเต็ม (CSV)",
+            data=csv_data,
+            file_name=f"thailand_green_energy_ranking_{'ev' if is_ev_mode else 'solar'}.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
 
 # ---------- RIGHT COLUMN: Deep Dive & Details ----------
 with col_right:
