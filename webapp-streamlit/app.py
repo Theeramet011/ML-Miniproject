@@ -287,20 +287,30 @@ st.markdown(f"""
     }}
 
     /* Columns Relative Anchor (So absolute children stay inside their respective column) */
+    div[data-testid="stColumn"],
     div[data-testid="column"],
-    [data-testid="column"],
-    .stColumn {{
+    [data-testid="stColumn"],
+    [data-testid="column"] {{
         position: relative !important;
     }}
 
-    /* Table (stDataFrame) Styling - Rigid height constraints prevent container collapse */
+    /* Table Container Styling - Prevent layout collapse so download button never overlaps */
+    div[data-testid="element-container"]:has(div[data-testid="stDataFrame"]),
+    div.element-container:has(div[data-testid="stDataFrame"]) {{
+        min-height: 500px !important;
+        display: block !important;
+        clear: both !important;
+    }}
+
     div[data-testid="stDataFrame"] {{
         border-radius: 10px !important;
         border: 1px solid {border_color} !important;
-        margin-bottom: 16px !important;
+        margin-bottom: 24px !important;
         clear: both !important;
-        position: static !important;
-        min-height: 484px !important;
+        position: relative !important;
+        height: 480px !important;
+        min-height: 480px !important;
+        max-height: 480px !important;
         display: block !important;
         width: 100% !important;
     }}
@@ -311,13 +321,36 @@ st.markdown(f"""
         border-radius: 8px !important;
         height: 480px !important;
         min-height: 480px !important;
+        max-height: 480px !important;
         width: 100% !important;
     }}
 
-    /* Element Toolbar (Positioned in Empty Space Directly Under Tools Toggle inside Left Column) */
-    div[data-testid="stElementToolbar"],
-    .stElementToolbar,
-    div[data-testid="stElementToolbarButtonContainer"] {{
+    /* Table Tools Anchor Slot directly under Tools Toggle Switch */
+    #table-tools-anchor {{
+        display: {'flex' if show_tools else 'none'} !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+        margin-top: 4px !important;
+        min-height: 28px !important;
+    }}
+
+    #table-tools-anchor div[data-testid="stElementToolbar"],
+    #table-tools-anchor .stElementToolbar,
+    #table-tools-anchor div[data-testid="stElementToolbarButtonContainer"] {{
+        position: static !important;
+        top: auto !important;
+        right: auto !important;
+        display: flex !important;
+        opacity: 0.95 !important;
+        box-shadow: none !important;
+        background-color: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+    }}
+
+    /* Fallback if toolbar stays inside stDataFrame - Anchor strictly inside table top right without escaping */
+    div[data-testid="stDataFrame"] > div[data-testid="stElementToolbar"],
+    div[data-testid="stDataFrame"] > .stElementToolbar {{
         opacity: 0.9 !important;
         visibility: visible !important;
         display: {'flex' if show_tools else 'none'} !important;
@@ -331,8 +364,8 @@ st.markdown(f"""
         filter: none !important;
         z-index: 99 !important;
         position: absolute !important;
-        top: 36px !important;
-        right: 0px !important;
+        top: 6px !important;
+        right: 8px !important;
         transition: border-color 0.2s ease, opacity 0.2s ease !important;
     }}
 
@@ -615,7 +648,32 @@ with col_left:
             st.session_state["show_table_tools"] = toggle_val
             st.rerun()
         if show_tools:
-            st.markdown("<div style='height: 26px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div id='table-tools-anchor'></div>", unsafe_allow_html=True)
+            import streamlit.components.v1 as components
+            components.html("""
+            <script>
+            (function() {
+                function placeToolbar() {
+                    try {
+                        const doc = window.parent.document;
+                        const toolbar = doc.querySelector('div[data-testid="stElementToolbar"]');
+                        const anchor = doc.getElementById('table-tools-anchor');
+                        if (toolbar && anchor) {
+                            if (toolbar.parentElement !== anchor) {
+                                anchor.appendChild(toolbar);
+                            }
+                        }
+                    } catch(e) {}
+                }
+                placeToolbar();
+                setTimeout(placeToolbar, 80);
+                setTimeout(placeToolbar, 300);
+                setTimeout(placeToolbar, 700);
+                const obs = new MutationObserver(placeToolbar);
+                obs.observe(window.parent.document.body, { childList: true, subtree: true });
+            })();
+            </script>
+            """, height=0, width=0)
 
     # Search Box
     search_query = st.text_input("ค้นหาชื่อจังหวัด:", "", placeholder="🔍 ค้นหา เช่น นนทบุรี, ระยอง, เชียงใหม่...", label_visibility="collapsed")
@@ -667,22 +725,19 @@ with col_left:
 
     table_df = df_display[show_cols].rename(columns=rename_dict)
     table_df.index = np.arange(1, len(table_df) + 1)
-    
-    with st.container():
-        st.dataframe(table_df, use_container_width=True, height=480)
+    st.dataframe(table_df, use_container_width=True, height=480)
 
-    st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 18px; clear: both;'></div>", unsafe_allow_html=True)
 
     # Download CSV
-    with st.container():
-        csv_data = df_display.to_csv(index=False).encode('utf-8-sig')
-        st.download_button(
-            label="📥 ดาวน์โหลดรายงานฉบับเต็ม (CSV)",
-            data=csv_data,
-            file_name=f"thailand_green_energy_ranking_{'ev' if is_ev_mode else 'solar'}.csv",
-            mime="text/csv",
-            use_container_width=True
-        )
+    csv_data = df_display.to_csv(index=False).encode('utf-8-sig')
+    st.download_button(
+        label="📥 ดาวน์โหลดรายงานฉบับเต็ม (CSV)",
+        data=csv_data,
+        file_name=f"thailand_green_energy_ranking_{'ev' if is_ev_mode else 'solar'}.csv",
+        mime="text/csv",
+        use_container_width=True
+    )
 
 # ---------- RIGHT COLUMN: Deep Dive & Details ----------
 with col_right:
