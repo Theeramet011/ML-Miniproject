@@ -3,4 +3,4 @@ primaryColor = "#10b981"
 font = "sans serif"
 
 [client]
-toolbarMode = "minimal"
+toolbarMode = "viewer"

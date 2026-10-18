@@ -77,6 +77,33 @@ st.markdown(f"""
         display: none !important;
     }}
 
+    /* Streamlit Top Header Bar (Fix: Make top bar black in Dark Mode) */
+    header[data-testid="stHeader"],
+    .stApp > header,
+    div[data-testid="stHeader"] {{
+        background-color: {bg_app} !important;
+        background: {bg_app} !important;
+        color: {text_main} !important;
+    }}
+
+    header[data-testid="stHeader"] svg,
+    header[data-testid="stHeader"] button,
+    header[data-testid="stHeader"] a,
+    header[data-testid="stHeader"] span {{
+        color: {text_main} !important;
+        fill: {text_main} !important;
+    }}
+
+    header[data-testid="stHeader"] button:hover {{
+        background-color: {'#1d2433' if is_dark else '#e2e8f0'} !important;
+    }}
+
+    /* Top Decoration Gradient Line */
+    div[data-testid="stDecoration"] {{
+        background: linear-gradient(90deg, #10b981, #059669) !important;
+        height: 3px !important;
+    }}
+
     /* Global App Background & Text */
     .stApp {{
         background-color: {bg_app} !important;
@@ -251,11 +278,55 @@ st.markdown(f"""
         border-radius: 10px !important;
         border: 1px solid {border_color} !important;
         background-color: {bg_card} !important;
-        overflow: hidden !important;
     }}
 
     div[data-testid="stDataFrame"] canvas {{
         border-radius: 8px !important;
+    }}
+
+    /* Element Toolbar (stDataFrame & Charts Buttons: Fullscreen, CSV Download, Search) */
+    div[data-testid="stElementToolbar"],
+    .stElementToolbar {{
+        opacity: 1 !important;
+        visibility: visible !important;
+        display: flex !important;
+        background-color: {bg_card} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+    }}
+
+    div[data-testid="stElementToolbar"] button,
+    .stElementToolbar button {{
+        background-color: transparent !important;
+        color: {text_main} !important;
+        border: none !important;
+    }}
+
+    div[data-testid="stElementToolbar"] button svg,
+    .stElementToolbar button svg {{
+        fill: {text_main} !important;
+        color: {text_main} !important;
+    }}
+
+    div[data-testid="stElementToolbar"] button:hover,
+    .stElementToolbar button:hover {{
+        background-color: {'#1d2433' if is_dark else '#f1f5f9'} !important;
+        color: #10b981 !important;
+    }}
+
+    /* Fullscreen Modal & Containers (Expanded Charts, Radar, PCA 2D, Tables) */
+    div[data-testid="stFullScreenFrame"],
+    div[data-testid="stFullScreenFrame"] > div,
+    div[data-testid="stFullScreenFrame"] section,
+    div[data-testid="stFullScreenFrame"] [data-testid="stPlotlyChart"],
+    div[data-testid="stFullScreenFrame"] .js-plotly-plot,
+    div[data-testid="stFullScreenFrame"] .plot-container,
+    :fullscreen,
+    ::backdrop {{
+        background-color: {bg_app} !important;
+        background: {bg_app} !important;
+        color: {text_main} !important;
     }}
 
     /* Alerts (st.success, st.info) */
@@ -561,13 +632,13 @@ with col_right:
             polar=dict(
                 radialaxis=dict(visible=True, range=[0, 100], color=text_muted, gridcolor=plotly_grid),
                 angularaxis=dict(color=text_sub, gridcolor=plotly_grid),
-                bgcolor="rgba(0,0,0,0)"
+                bgcolor=bg_card
             ),
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor=bg_card,
+            plot_bgcolor=bg_card,
             font=dict(family="Kanit", color=text_main),
             showlegend=True,
-            legend=dict(orientation="h", y=-0.12, x=0.2),
+            legend=dict(orientation="h", y=-0.12, x=0.2, font=dict(color=text_main)),
             height=360,
             margin=dict(l=30, r=30, t=15, b=30)
         )
@@ -591,8 +662,8 @@ with col_right:
         fig_bar.update_layout(
             yaxis=dict(autorange="reversed", color=text_sub),
             xaxis=dict(color=text_sub, gridcolor=plotly_grid),
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor=bg_card,
+            plot_bgcolor=bg_card,
             font=dict(family="Kanit", color=text_main),
             height=360,
             margin=dict(l=0, r=0, t=10, b=0),
@@ -651,13 +722,13 @@ with col_right:
         )
         fig_pca.update_traces(marker=dict(size=10, line=dict(width=1, color='#ffffff')))
         fig_pca.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor=bg_card,
+            plot_bgcolor=bg_card,
             font=dict(family="Kanit", color=text_main),
             xaxis=dict(gridcolor=plotly_grid, color=text_muted),
             yaxis=dict(gridcolor=plotly_grid, color=text_muted),
             height=360,
             margin=dict(l=20, r=20, t=10, b=10),
-            legend=dict(orientation="h", y=-0.2)
+            legend=dict(orientation="h", y=-0.2, font=dict(color=text_main))
         )
         st.plotly_chart(fig_pca, use_container_width=True)
