@@ -29,9 +29,13 @@ if "business_mode" not in st.session_state:
 if "cluster_filter" not in st.session_state:
     st.session_state["cluster_filter"] = "ALL"  # 'ALL', '2', '1', '0'
 
+if "show_table_tools" not in st.session_state:
+    st.session_state["show_table_tools"] = True
+
 is_dark = st.session_state["theme_mode"] == "dark"
 is_ev_mode = st.session_state["business_mode"] == "EV"
 active_filter = st.session_state["cluster_filter"]
+show_tools = st.session_state["show_table_tools"]
 
 # Theme Tokens
 if is_dark:
@@ -284,22 +288,34 @@ st.markdown(f"""
         border-radius: 8px !important;
     }}
 
-    /* Element Toolbar (stDataFrame & Charts Buttons: Fullscreen, CSV Download, Search, Show/Hide Columns) */
+    /* Element Toolbar (Micro-sized, Sleek Pill, Positioned Above Table - Zero Data Blocking) */
     div[data-testid="stElementToolbar"],
     .stElementToolbar,
     div[data-testid="stElementToolbarButtonContainer"] {{
-        opacity: 1 !important;
+        opacity: 0.35 !important;
         visibility: visible !important;
-        display: flex !important;
+        display: {'flex' if show_tools else 'none'} !important;
         align-items: center !important;
-        gap: 3px !important;
-        background-color: {'#1e293b' if is_dark else '#ffffff'} !important;
+        gap: 2px !important;
+        background-color: {'rgba(30, 41, 59, 0.85)' if is_dark else 'rgba(255, 255, 255, 0.95)'} !important;
+        backdrop-filter: blur(8px) !important;
         border: 1px solid {'#334155' if is_dark else '#cbd5e1'} !important;
-        border-radius: 8px !important;
-        padding: 4px 6px !important;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+        border-radius: 6px !important;
+        padding: 2px 4px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
         filter: none !important;
         z-index: 100 !important;
+        position: absolute !important;
+        top: -32px !important;
+        right: 0px !important;
+        transition: opacity 0.2s ease, transform 0.15s ease !important;
+    }}
+
+    /* Glow to Full Opacity on Hover */
+    div[data-testid="stDataFrame"]:hover div[data-testid="stElementToolbar"],
+    div[data-testid="stElementToolbar"]:hover {{
+        opacity: 1 !important;
+        transform: translateY(-1px) !important;
     }}
 
     div[data-testid="stElementToolbarButton"],
@@ -310,8 +326,10 @@ st.markdown(f"""
         color: {text_main} !important;
         opacity: 1 !important;
         border: none !important;
-        border-radius: 6px !important;
-        padding: 5px 7px !important;
+        border-radius: 4px !important;
+        padding: 2px 4px !important;
+        height: 22px !important;
+        min-width: 22px !important;
         cursor: pointer !important;
         filter: none !important;
         display: inline-flex !important;
@@ -322,7 +340,7 @@ st.markdown(f"""
     div[data-testid="stElementToolbarButton"] button:hover,
     div[data-testid="stElementToolbar"] button:hover,
     .stElementToolbar button:hover {{
-        background-color: {'#334155' if is_dark else '#f1f5f9'} !important;
+        background-color: {'#334155' if is_dark else '#e2e8f0'} !important;
         color: #10b981 !important;
     }}
 
@@ -335,8 +353,8 @@ st.markdown(f"""
         stroke: {text_main} !important;
         filter: none !important;
         opacity: 1 !important;
-        width: 17px !important;
-        height: 17px !important;
+        width: 13px !important;
+        height: 13px !important;
     }}
 
     div[data-testid="stElementToolbarButton"] button:hover svg,
@@ -369,7 +387,7 @@ st.markdown(f"""
         background-color: transparent !important;
     }}
 
-    /* Fullscreen Modal & Containers (Expanded Charts, Radar, PCA 2D, Tables) */
+    /* Fullscreen Modal & Containers (Fix: Expanded Table Fills Fullscreen Without Empty Space Below) */
     div[data-testid="stFullScreenFrame"],
     div[data-testid="stFullScreenFrame"] > div,
     div[data-testid="stFullScreenFrame"] section,
@@ -381,6 +399,33 @@ st.markdown(f"""
         background-color: {bg_app} !important;
         background: {bg_app} !important;
         color: {text_main} !important;
+    }}
+
+    div[data-testid="stFullScreenFrame"] div[data-testid="stDataFrame"] {{
+        height: 100vh !important;
+        max-height: 100vh !important;
+        width: 100vw !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }}
+
+    div[data-testid="stFullScreenFrame"] div[data-testid="stDataFrameResizable"] {{
+        height: 100% !important;
+        max-height: 100vh !important;
+        width: 100% !important;
+        flex: 1 1 auto !important;
+    }}
+
+    div[data-testid="stFullScreenFrame"] div[data-testid="stDataFrameGlideDataEditor"] {{
+        height: 100% !important;
+        width: 100% !important;
+    }}
+
+    div[data-testid="stFullScreenFrame"] div[data-testid="stElementToolbar"] {{
+        top: 10px !important;
+        right: 14px !important;
     }}
 
     /* Alerts (st.success, st.info) */
@@ -530,8 +575,15 @@ col_left, col_right = st.columns([5, 7])
 
 # ---------- LEFT COLUMN: Table & Cluster Filter Pills ----------
 with col_left:
-    st.markdown(f"<h3 style='margin:0 0 2px 0; font-size:16px; font-weight:700;'>📋 ตารางจัดอันดับความคุ้มค่า 77 จังหวัด</h3>", unsafe_allow_html=True)
-    st.caption(f"แสดง {len(df_filtered)} จาก 77 จังหวัด")
+    c_tbl_title, c_tbl_toggle = st.columns([6.8, 3.2])
+    with c_tbl_title:
+        st.markdown(f"<h3 style='margin:0 0 2px 0; font-size:16px; font-weight:700;'>📋 ตารางจัดอันดับความคุ้มค่า 77 จังหวัด</h3>", unsafe_allow_html=True)
+        st.caption(f"แสดง {len(df_filtered)} จาก 77 จังหวัด")
+    with c_tbl_toggle:
+        toggle_val = st.toggle("🛠️ เครื่องมือ", value=st.session_state["show_table_tools"], key="toggle_show_tools")
+        if toggle_val != st.session_state["show_table_tools"]:
+            st.session_state["show_table_tools"] = toggle_val
+            st.rerun()
 
     # Search Box
     search_query = st.text_input("ค้นหาชื่อจังหวัด:", "", placeholder="🔍 ค้นหา เช่น นนทบุรี, ระยอง, เชียงใหม่...", label_visibility="collapsed")
