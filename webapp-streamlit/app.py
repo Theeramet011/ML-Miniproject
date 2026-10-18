@@ -21,7 +21,7 @@ st.set_page_config(
 
 # 2. Session State Initialization
 if "theme_mode" not in st.session_state:
-    st.session_state["theme_mode"] = "light"  # Default: Light mode
+    st.session_state["theme_mode"] = "dark"  # Default: Dark mode (VoltAgent Theme)
 
 if "business_mode" not in st.session_state:
     st.session_state["business_mode"] = "EV"  # 'EV' or 'SOLAR'
@@ -63,7 +63,7 @@ else:
     radar_nat_color = "#94a3b8"
     radar_nat_fill = "rgba(148, 163, 184, 0.2)"
 
-# Dynamic Theme CSS (Guaranteed: NO red buttons, NO mismatched card colors)
+# Dynamic Theme CSS (Covers: App, Metrics, Buttons, Table, Dropdowns & Popovers)
 st.markdown(f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
@@ -88,7 +88,7 @@ st.markdown(f"""
         color: {text_main} !important;
     }}
 
-    /* Metric Cards: Synchronized Background & Text */
+    /* Metric Cards */
     div[data-testid="stMetric"] {{
         background-color: {bg_card} !important;
         border: 1px solid {border_color} !important;
@@ -125,7 +125,7 @@ st.markdown(f"""
         box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
     }}
 
-    /* Secondary Buttons: Clean Neutral */
+    /* Secondary Buttons */
     button[kind="secondary"], .stButton>button[kind="secondary"] {{
         background-color: {btn_sec_bg} !important;
         color: {btn_sec_text} !important;
@@ -160,6 +160,119 @@ st.markdown(f"""
         color: {text_main} !important;
         border: 1px solid {border_color} !important;
         border-radius: 8px !important;
+    }}
+
+    input::placeholder {{
+        color: {text_muted} !important;
+    }}
+
+    /* Selectbox Widget */
+    div[data-testid="stSelectbox"] label,
+    div[data-testid="stSelectbox"] label p {{
+        color: {text_main} !important;
+        font-weight: 600 !important;
+    }}
+
+    div[data-baseweb="select"] {{
+        background-color: transparent !important;
+    }}
+
+    div[data-baseweb="select"] > div {{
+        background-color: {bg_card} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 8px !important;
+        color: {text_main} !important;
+    }}
+
+    div[data-baseweb="select"] div,
+    div[data-baseweb="select"] span {{
+        color: {text_main} !important;
+    }}
+
+    div[data-baseweb="select"] input {{
+        color: {text_main} !important;
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }}
+
+    div[data-baseweb="select"] svg {{
+        fill: {text_sub} !important;
+        color: {text_sub} !important;
+    }}
+
+    /* Dropdown Popover & Menu Items (Full width, dark in dark mode) */
+    div[data-baseweb="popover"],
+    div[data-baseweb="popover"] > div,
+    div[data-baseweb="menu"],
+    div[data-baseweb="menu"] > ul,
+    ul[role="listbox"],
+    div[role="listbox"],
+    div[data-testid="stSelectboxVirtualDropdown"] {{
+        background-color: {bg_card} !important;
+        color: {text_main} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 8px !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+    }}
+
+    ul[role="listbox"] li,
+    li[role="option"],
+    div[role="option"],
+    [data-baseweb="menu-item"] {{
+        background-color: {bg_card} !important;
+        color: {text_main} !important;
+        padding: 9px 14px !important;
+        font-size: 14px !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        border-bottom: 1px solid {border_color} !important;
+    }}
+
+    ul[role="listbox"] li:hover,
+    li[role="option"]:hover,
+    div[role="option"]:hover,
+    [data-baseweb="menu-item"]:hover,
+    li[role="option"][aria-selected="true"],
+    li[data-highlighted="true"] {{
+        background-color: {'#1d2433' if is_dark else '#e2e8f0'} !important;
+        color: #10b981 !important;
+    }}
+
+    ul[role="listbox"] li *,
+    li[role="option"] *,
+    div[role="option"] * {{
+        color: inherit !important;
+    }}
+
+    /* Table (stDataFrame) Dark Mode Inversion & Styling */
+    div[data-testid="stDataFrame"] {{
+        {'filter: invert(0.92) hue-rotate(180deg) brightness(0.95) contrast(1.05) !important;' if is_dark else 'filter: none !important;'}
+        border-radius: 10px !important;
+        border: 1px solid {border_color} !important;
+        background-color: {bg_card} !important;
+        overflow: hidden !important;
+    }}
+
+    div[data-testid="stDataFrame"] canvas {{
+        border-radius: 8px !important;
+    }}
+
+    /* Alerts (st.success, st.info) */
+    div[data-testid="stAlert"] {{
+        background-color: {'#111a1f' if is_dark else '#f0fdf4'} !important;
+        border: 1px solid {'#1f3a33' if is_dark else '#bbf7d0'} !important;
+        border-radius: 8px !important;
+    }}
+
+    div[data-testid="stAlert"] * {{
+        color: {text_main} !important;
+    }}
+
+    /* Slider styling */
+    div[data-testid="stSlider"] label,
+    div[data-testid="stSlider"] div[data-testid="stWidgetLabel"] p {{
+        color: {text_main} !important;
     }}
 
     /* Tabs */
@@ -377,7 +490,7 @@ with col_right:
             delta=prov_row["EV_TIER"] if is_ev_mode else f"คืนทุน ~{prov_row['SOLAR_PAYBACK_YEARS']} ปี"
         )
 
-    # Clean Strategic Advice (Native Components - Zero Raw Code Leaks)
+    # Strategic Advice
     if is_ev_mode:
         st.success(f"🔌 **หัวชาร์จแนะนำ:** {prov_row['CHARGER_TECH']}")
         st.info(f"📍 **ทำเลเป้าหมาย:** {prov_row['TARGET_LOCATIONS']}")
