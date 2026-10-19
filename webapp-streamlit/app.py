@@ -127,21 +127,31 @@ st.markdown(f"""
         background-color: {bg_card} !important;
         border: 1px solid {border_color} !important;
         border-radius: 14px !important;
-        padding: 14px 18px !important;
+        padding: 12px 14px !important;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
     }}
 
-    div[data-testid="stMetricLabel"] {{
+    div[data-testid="stMetricLabel"],
+    div[data-testid="stMetricLabel"] > div,
+    div[data-testid="stMetricLabel"] p {{
         color: {text_muted} !important;
         font-size: 13px !important;
         font-weight: 500 !important;
+        overflow: visible !important;
+        text-overflow: unset !important;
+        white-space: nowrap !important;
     }}
 
-    div[data-testid="stMetricValue"] {{
+    div[data-testid="stMetricValue"],
+    div[data-testid="stMetricValue"] > div {{
         color: {text_main} !important;
-        font-family: 'JetBrains Mono', monospace !important;
+        font-family: 'JetBrains Mono', 'Prompt', monospace !important;
         font-weight: 700 !important;
-        font-size: 26px !important;
+        font-size: 20px !important;
+        overflow: visible !important;
+        text-overflow: unset !important;
+        white-space: nowrap !important;
+        letter-spacing: -0.3px !important;
     }}
 
     div[data-testid="stMetricDelta"] {{
