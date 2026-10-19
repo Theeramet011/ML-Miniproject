@@ -718,18 +718,13 @@ with col_left:
     else:
         df_display = df_filtered
 
-    c_tbl_title, c_tbl_toggle = st.columns([5.8, 4.2])
+    c_tbl_title, c_tbl_toggle = st.columns([6.2, 3.8])
     with c_tbl_title:
         st.markdown(f"<h3 style='margin:0 0 2px 0; font-size:16px; font-weight:700;'>📋 ตารางจัดอันดับความคุ้มค่า 77 จังหวัด</h3>", unsafe_allow_html=True)
         st.caption(f"แสดง {len(df_display)} จาก 77 จังหวัด")
     with c_tbl_toggle:
-        toggle_val = st.toggle("🛠️ เครื่องมือ", value=st.session_state["show_table_tools"], key="toggle_show_tools")
-        if toggle_val != st.session_state["show_table_tools"]:
-            st.session_state["show_table_tools"] = toggle_val
-            st.rerun()
-        if show_tools:
-            if st.button("⛶ ดูตารางเต็มจอ", key="btn_open_full_table", use_container_width=True, help="เปิดดูข้อมูลทั้งหมด 77 จังหวัดแบบกว้างเต็มหน้าจอ"):
-                show_full_table_dialog()
+        if st.button("⛶ ดูตารางเต็มจอ", key="btn_open_full_table", use_container_width=True, help="เปิดดูข้อมูลทั้งหมด 77 จังหวัดแบบกว้างเต็มหน้าจอ"):
+            show_full_table_dialog()
 
     # Search Box
     search_query = st.text_input("ค้นหาชื่อจังหวัด:", placeholder="🔍 ค้นหา เช่น นนทบุรี, ระยอง, เชียงใหม่...", label_visibility="collapsed", key="table_search_input")
