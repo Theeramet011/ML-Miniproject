@@ -62,9 +62,8 @@ def calculate_business_scores(df: pd.DataFrame, w_house=0.35, w_ind=0.25, w_clus
     raw_solar = (norm_house * 0.75) + ((1 - norm_urban) * 0.25)
     df["SOLAR_SCORE"] = np.clip(np.round(raw_solar * 100, 1), 15.0, 100.0)
 
-    # คำนวณระยะเวลาคืนทุนโดยประมาณ
-    annual_savings = df["ELEC_PER_HOUSE"] * 4.4 * 0.35
-    payback = (140000 / annual_savings.clip(lower=15000)).round(1)
+    # คำนวณระยะเวลาคืนทุนโดยประมาณ (4.5 - 8.5 ปี ตามระดับการใช้ไฟบ้าน)
+    payback = (8.5 - (norm_house * 4.0)).round(1)
     df["SOLAR_PAYBACK_YEARS"] = np.clip(payback, 4.0, 8.5)
 
     return df

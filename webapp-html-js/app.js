@@ -82,11 +82,10 @@ function calculateAllScores(wHouse = 0.35, wInd = 0.25, wCluster = 0.25, wUrban 
 
         // สูตร Solar Potential (0 - 100) & Payback
         const solarScore = Math.min(100, Math.max(15, Math.round((normHouse * 0.75 + (1 - normUrban) * 0.25) * 100 * 10) / 10));
-        // คำนวณระยะเวลาคืนทุนโดยประมาณ
-        let annualSavings = p.elec_per_house * 4.4 * 0.35; // ประหยัด 35% ของค่าไฟบ้าน ค่าไฟหน่วยละ 4.4 บาท
-        let payback = (140000 / Math.max(annualSavings, 15000)).toFixed(1);
-        if (payback < 4.0) payback = '4.0';
-        if (payback > 8.5) payback = '8.5';
+        // คำนวณระยะเวลาคืนทุนโดยประมาณ (4.5 - 8.5 ปี ตามระดับการใช้ไฟบ้าน)
+        let payback = (8.5 - (normHouse * 4.0)).toFixed(1);
+        if (parseFloat(payback) < 4.0) payback = '4.0';
+        if (parseFloat(payback) > 8.5) payback = '8.5';
 
         return {
             ...p,
