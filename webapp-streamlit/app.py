@@ -32,6 +32,9 @@ if "cluster_filter" not in st.session_state:
 if "show_table_tools" not in st.session_state:
     st.session_state["show_table_tools"] = True
 
+if "table_full_view" not in st.session_state:
+    st.session_state["table_full_view"] = False
+
 is_dark = st.session_state["theme_mode"] == "dark"
 is_ev_mode = st.session_state["business_mode"] == "EV"
 active_filter = st.session_state["cluster_filter"]
@@ -171,9 +174,11 @@ st.markdown(f"""
     }}
 
     /* Download Button - Positioned clearly below table without overlapping */
+    div.st-key-btn_download_full_report,
+    div[data-testid="stElementContainer"]:has(div[data-testid="stDownloadButton"]),
     div[data-testid="stDownloadButton"] {{
-        margin-top: 10px !important;
-        margin-bottom: 16px !important;
+        margin-top: 20px !important;
+        margin-bottom: 24px !important;
         clear: both !important;
         display: block !important;
         position: relative !important;
@@ -295,22 +300,22 @@ st.markdown(f"""
     }}
 
     /* Table Container Styling - Prevent layout collapse so download button never overlaps */
-    div[data-testid="element-container"]:has(div[data-testid="stDataFrame"]),
+    div.st-key-main_ranking_table,
+    div[data-testid="stElementContainer"]:has(div[data-testid="stDataFrame"]),
     div.element-container:has(div[data-testid="stDataFrame"]) {{
-        min-height: 500px !important;
-        display: block !important;
+        min-height: 510px !important;
+        height: auto !important;
+        margin-bottom: 20px !important;
         clear: both !important;
+        display: block !important;
     }}
 
     div[data-testid="stDataFrame"] {{
         border-radius: 10px !important;
         border: 1px solid {border_color} !important;
-        margin-bottom: 24px !important;
+        margin-bottom: 16px !important;
         clear: both !important;
         position: relative !important;
-        height: 480px !important;
-        min-height: 480px !important;
-        max-height: 480px !important;
         display: block !important;
         width: 100% !important;
     }}
@@ -319,105 +324,27 @@ st.markdown(f"""
     div[data-testid="stDataFrameResizable"] {{
         {'filter: invert(0.92) hue-rotate(180deg) brightness(0.95) contrast(1.05) !important;' if is_dark else 'filter: none !important;'}
         border-radius: 8px !important;
-        height: 480px !important;
-        min-height: 480px !important;
-        max-height: 480px !important;
         width: 100% !important;
     }}
 
-    /* Table Tools Anchor Slot directly under Tools Toggle Switch */
-    #table-tools-anchor {{
-        display: {'flex' if show_tools else 'none'} !important;
-        justify-content: flex-end !important;
-        align-items: center !important;
-        margin-top: 4px !important;
-        min-height: 28px !important;
-    }}
-
-    #table-tools-anchor div[data-testid="stElementToolbar"],
-    #table-tools-anchor .stElementToolbar,
-    #table-tools-anchor div[data-testid="stElementToolbarButtonContainer"] {{
-        position: static !important;
-        top: auto !important;
-        right: auto !important;
-        display: flex !important;
-        opacity: 0.95 !important;
-        box-shadow: none !important;
-        background-color: transparent !important;
-        border: none !important;
-        padding: 0 !important;
-    }}
-
-    /* Fallback if toolbar stays inside stDataFrame - Anchor strictly inside table top right without escaping */
-    div[data-testid="stDataFrame"] > div[data-testid="stElementToolbar"],
-    div[data-testid="stDataFrame"] > .stElementToolbar {{
-        opacity: 0.9 !important;
-        visibility: visible !important;
-        display: {'flex' if show_tools else 'none'} !important;
-        align-items: center !important;
-        gap: 2px !important;
-        background-color: {'#1e293b' if is_dark else '#ffffff'} !important;
-        border: 1px solid {'#334155' if is_dark else '#cbd5e1'} !important;
+    /* Table Quick Tool Buttons under Toggle Switch */
+    div.st-key-btn_toggle_tbl_expand button,
+    div.st-key-btn_quick_csv button {{
+        font-size: 12px !important;
+        padding: 4px 6px !important;
+        height: 32px !important;
         border-radius: 6px !important;
-        padding: 2px 4px !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
-        filter: none !important;
-        z-index: 99 !important;
-        position: absolute !important;
-        top: 6px !important;
-        right: 8px !important;
-        transition: border-color 0.2s ease, opacity 0.2s ease !important;
+        font-weight: 500 !important;
     }}
 
-    div[data-testid="stElementToolbar"]:hover {{
-        opacity: 1 !important;
-        border-color: #10b981 !important;
-    }}
-
-    div[data-testid="stElementToolbarButton"],
-    div[data-testid="stElementToolbarButton"] button,
-    div[data-testid="stElementToolbar"] button,
-    .stElementToolbar button {{
-        background-color: transparent !important;
-        color: {text_main} !important;
-        opacity: 1 !important;
-        border: none !important;
-        border-radius: 4px !important;
-        padding: 2px 4px !important;
-        height: 22px !important;
-        min-width: 22px !important;
-        cursor: pointer !important;
-        filter: none !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }}
-
-    div[data-testid="stElementToolbarButton"] button:hover,
-    div[data-testid="stElementToolbar"] button:hover,
-    .stElementToolbar button:hover {{
-        background-color: {'#334155' if is_dark else '#e2e8f0'} !important;
-        color: #10b981 !important;
-    }}
-
-    div[data-testid="stElementToolbarButton"] svg,
-    div[data-testid="stElementToolbar"] button svg,
-    .stElementToolbar button svg,
-    [data-testid="stElementToolbarButtonIcon"] {{
-        fill: {text_main} !important;
-        color: {text_main} !important;
-        stroke: {text_main} !important;
-        filter: none !important;
-        opacity: 1 !important;
-        width: 13px !important;
-        height: 13px !important;
-    }}
-
-    div[data-testid="stElementToolbarButton"] button:hover svg,
-    div[data-testid="stElementToolbar"] button:hover svg {{
-        fill: #10b981 !important;
-        color: #10b981 !important;
-        stroke: #10b981 !important;
+    /* Hide Streamlit's Internal Floating Toolbar Completely */
+    div[data-testid="stElementToolbar"],
+    .stElementToolbar,
+    div[data-testid="stElementToolbarButtonContainer"] {{
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
     }}
 
     /* Tooltip Popover (Fix: BaseWeb Tooltip - Crisp Dark Bubble, White Text) */
@@ -638,49 +565,42 @@ col_left, col_right = st.columns([5, 7])
 
 # ---------- LEFT COLUMN: Table & Cluster Filter Pills ----------
 with col_left:
-    c_tbl_title, c_tbl_toggle = st.columns([6.2, 3.8])
+    curr_search = st.session_state.get("table_search_input", "").strip()
+    if curr_search:
+        df_display = df_filtered[df_filtered["PROVINCE_CLEAN"].str.contains(curr_search)]
+    else:
+        df_display = df_filtered
+
+    c_tbl_title, c_tbl_toggle = st.columns([5.8, 4.2])
     with c_tbl_title:
         st.markdown(f"<h3 style='margin:0 0 2px 0; font-size:16px; font-weight:700;'>📋 ตารางจัดอันดับความคุ้มค่า 77 จังหวัด</h3>", unsafe_allow_html=True)
-        st.caption(f"แสดง {len(df_filtered)} จาก 77 จังหวัด")
+        st.caption(f"แสดง {len(df_display)} จาก 77 จังหวัด")
     with c_tbl_toggle:
         toggle_val = st.toggle("🛠️ เครื่องมือ", value=st.session_state["show_table_tools"], key="toggle_show_tools")
         if toggle_val != st.session_state["show_table_tools"]:
             st.session_state["show_table_tools"] = toggle_val
             st.rerun()
         if show_tools:
-            st.markdown("<div id='table-tools-anchor'></div>", unsafe_allow_html=True)
-            import streamlit.components.v1 as components
-            components.html("""
-            <script>
-            (function() {
-                function placeToolbar() {
-                    try {
-                        const doc = window.parent.document;
-                        const toolbar = doc.querySelector('div[data-testid="stElementToolbar"]');
-                        const anchor = doc.getElementById('table-tools-anchor');
-                        if (toolbar && anchor) {
-                            if (toolbar.parentElement !== anchor) {
-                                anchor.appendChild(toolbar);
-                            }
-                        }
-                    } catch(e) {}
-                }
-                placeToolbar();
-                setTimeout(placeToolbar, 80);
-                setTimeout(placeToolbar, 300);
-                setTimeout(placeToolbar, 700);
-                const obs = new MutationObserver(placeToolbar);
-                obs.observe(window.parent.document.body, { childList: true, subtree: true });
-            })();
-            </script>
-            """, height=0, width=0)
+            t_col1, t_col2 = st.columns(2)
+            with t_col1:
+                is_full = st.session_state.get("table_full_view", False)
+                if st.button("⛶ ขยาย" if not is_full else "📐 ย่อ", key="btn_toggle_tbl_expand", use_container_width=True, help="สลับขยายความสูงตาราง"):
+                    st.session_state["table_full_view"] = not is_full
+                    st.rerun()
+            with t_col2:
+                csv_bytes = df_display.to_csv(index=False).encode('utf-8-sig')
+                st.download_button(
+                    label="📥 CSV",
+                    data=csv_bytes,
+                    file_name=f"thailand_green_energy_ranking_{'ev' if is_ev_mode else 'solar'}.csv",
+                    mime="text/csv",
+                    key="btn_quick_csv",
+                    use_container_width=True,
+                    help="ดาวน์โหลดข้อมูลตารางนี้ทันที"
+                )
 
     # Search Box
-    search_query = st.text_input("ค้นหาชื่อจังหวัด:", "", placeholder="🔍 ค้นหา เช่น นนทบุรี, ระยอง, เชียงใหม่...", label_visibility="collapsed")
-    if search_query:
-        df_display = df_filtered[df_filtered["PROVINCE_CLEAN"].str.contains(search_query.strip())]
-    else:
-        df_display = df_filtered
+    search_query = st.text_input("ค้นหาชื่อจังหวัด:", placeholder="🔍 ค้นหา เช่น นนทบุรี, ระยอง, เชียงใหม่...", label_visibility="collapsed", key="table_search_input")
 
     # Cluster Filter Horizontal Pills
     c_lbl, c_all, c_c2, c_c1, c_c0 = st.columns([1.1, 1.6, 2.3, 2.3, 2.2])
@@ -725,9 +645,11 @@ with col_left:
 
     table_df = df_display[show_cols].rename(columns=rename_dict)
     table_df.index = np.arange(1, len(table_df) + 1)
-    st.dataframe(table_df, use_container_width=True, height=480)
+    is_full = st.session_state.get("table_full_view", False)
+    tbl_h = 760 if is_full else 480
+    st.dataframe(table_df, use_container_width=True, height=tbl_h, key="main_ranking_table")
 
-    st.markdown("<div style='height: 18px; clear: both;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 24px; clear: both; display: block;'></div>", unsafe_allow_html=True)
 
     # Download CSV
     csv_data = df_display.to_csv(index=False).encode('utf-8-sig')
@@ -736,6 +658,7 @@ with col_left:
         data=csv_data,
         file_name=f"thailand_green_energy_ranking_{'ev' if is_ev_mode else 'solar'}.csv",
         mime="text/csv",
+        key="btn_download_full_report",
         use_container_width=True
     )
 
