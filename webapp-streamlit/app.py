@@ -299,13 +299,9 @@ st.markdown(f"""
         position: relative !important;
     }}
 
-    /* Table Container Styling - Prevent layout collapse so download button never overlaps */
-    div.st-key-main_ranking_table,
-    div[data-testid="stElementContainer"]:has(div[data-testid="stDataFrame"]),
-    div.element-container:has(div[data-testid="stDataFrame"]) {{
-        min-height: 510px !important;
-        height: auto !important;
-        margin-bottom: 20px !important;
+    /* Table Container Styling - Keep native height so download button never overlaps */
+    div.st-key-main_ranking_table {{
+        margin-bottom: 14px !important;
         clear: both !important;
         display: block !important;
     }}
@@ -313,10 +309,6 @@ st.markdown(f"""
     div[data-testid="stDataFrame"] {{
         border-radius: 10px !important;
         border: 1px solid {border_color} !important;
-        margin-bottom: 16px !important;
-        clear: both !important;
-        position: relative !important;
-        display: block !important;
         width: 100% !important;
     }}
 
@@ -339,11 +331,24 @@ st.markdown(f"""
         margin-top: 4px !important;
     }}
 
+    /* Dialog Top CSV Button */
+    div.st-key-btn_dlg_download {{
+        margin-top: 0px !important;
+        margin-bottom: 8px !important;
+    }}
+
+    div.st-key-btn_dlg_download button {{
+        height: 36px !important;
+        padding: 4px 12px !important;
+        font-size: 13px !important;
+    }}
+
     /* Main Menu 3-Dots Popover (Fix: Make 3-dots dropdown menu dark in dark mode) */
     div[data-testid="stMainMenuPopover"],
     .stMainMenuPopover,
     div[data-testid="stMainMenuPopover"] > div,
     ul[data-testid="stMainMenuList"] {{
+        background: {bg_card} !important;
         background-color: {bg_card} !important;
         color: {text_main} !important;
         border: 1px solid {border_color} !important;
@@ -371,26 +376,53 @@ st.markdown(f"""
         border-color: {border_color} !important;
     }}
 
-    /* Modal Dialog (st.dialog) Dark Theme Styling */
+    /* Modal Dialog (st.dialog) Dark Theme Styling - Covers stDialog wrapper, inner card, header, and close button */
+    div[data-testid="stDialog"] > div,
+    .stDialog > div,
     div[role="dialog"],
+    .react-aria-Dialog,
     div[data-testid="stModal"],
     div[data-baseweb="modal"],
     div[data-baseweb="modal"] > div {{
+        background: {bg_card} !important;
         background-color: {bg_card} !important;
         color: {text_main} !important;
         border-radius: 16px !important;
         border: 1px solid {border_color} !important;
     }}
 
+    div[data-testid="stDialog"] [slot="title"],
+    div[role="dialog"] [slot="title"],
     div[role="dialog"] [data-testid="stModalHeader"],
+    div[role="dialog"] h1,
     div[role="dialog"] h2,
-    div[role="dialog"] h3 {{
+    div[role="dialog"] h3,
+    div[role="dialog"] p,
+    div[role="dialog"] span,
+    div[role="dialog"] label {{
         color: {text_main} !important;
-        font-weight: 700 !important;
     }}
 
-    div[role="dialog"] button[aria-label="Close"] svg {{
+    div[data-testid="stDialog"] button[aria-label="Close"],
+    div[role="dialog"] button[aria-label="Close"] {{
+        color: {text_main} !important;
+        background-color: {'#1d2433' if is_dark else '#f1f5f9'} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 8px !important;
+    }}
+
+    div[data-testid="stDialog"] button[aria-label="Close"]:hover,
+    div[role="dialog"] button[aria-label="Close"]:hover {{
+        border-color: #10b981 !important;
+        color: #10b981 !important;
+    }}
+
+    div[data-testid="stDialog"] button[aria-label="Close"] svg,
+    div[role="dialog"] button[aria-label="Close"] svg,
+    div[role="dialog"] button[aria-label="Close"] path {{
         fill: {text_main} !important;
+        stroke: {text_main} !important;
+        color: {text_main} !important;
     }}
 
     /* Hide Streamlit's Internal Floating Toolbar Completely */
@@ -426,52 +458,12 @@ st.markdown(f"""
         background-color: transparent !important;
     }}
 
-    /* Fullscreen Modal & Containers (Fix: Expanded Table Fills Fullscreen Without Empty Space Below) */
-    div[data-testid="stFullScreenFrame"],
-    div[data-testid="stFullScreenFrame"] > div,
-    div[data-testid="stFullScreenFrame"] section,
-    div[data-testid="stFullScreenFrame"] [data-testid="stPlotlyChart"],
-    div[data-testid="stFullScreenFrame"] .js-plotly-plot,
-    div[data-testid="stFullScreenFrame"] .plot-container,
+    /* Fullscreen Plotly Charts */
     :fullscreen,
     ::backdrop {{
         background-color: {bg_app} !important;
         background: {bg_app} !important;
         color: {text_main} !important;
-    }}
-
-    div[data-testid="stFullScreenFrame"] div[data-testid="stDataFrame"] {{
-        height: 100vh !important;
-        max-height: 100vh !important;
-        min-height: 100vh !important;
-        width: 100vw !important;
-        display: flex !important;
-        flex-direction: column !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        position: relative !important;
-    }}
-
-    div[data-testid="stFullScreenFrame"] div[data-testid="stDataFrameResizable"] {{
-        height: 100% !important;
-        max-height: 100vh !important;
-        min-height: 100vh !important;
-        width: 100% !important;
-        flex: 1 1 auto !important;
-    }}
-
-    div[data-testid="stFullScreenFrame"] div[data-testid="stDataFrameGlideDataEditor"] {{
-        height: 100% !important;
-        width: 100% !important;
-    }}
-
-    div[data-testid="stFullScreenFrame"] div[data-testid="stElementToolbar"] {{
-        top: 10px !important;
-        right: 14px !important;
-        position: absolute !important;
-        display: flex !important;
-        opacity: 0.9 !important;
-        z-index: 999999 !important;
     }}
 
     /* Alerts (st.success, st.info) */
@@ -619,31 +611,52 @@ st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 # 7. Modal Dialog for Full Table View (รูปแบบ A: ตารางจอใหญ่เต็มตา)
 @st.dialog("📋 ตารางจัดอันดับความคุ้มค่า 77 จังหวัด (ฉบับเต็ม)", width="large")
 def show_full_table_dialog():
-    st.markdown(f"<p style='color:{text_muted}; font-size:13px; margin:0 0 12px 0;'>แสดงข้อมูลผลลัพธ์การจัดกลุ่มและการวิเคราะห์เจาะลึก 77 จังหวัดแบบกว้างเต็มหน้าจอ</p>", unsafe_allow_html=True)
-    
+    filter_opts = ["ทั้งหมด", "Cluster 2 (อุตสาหกรรม/มหานคร)", "Cluster 1 (ท่องเที่ยว/บริการ)", "Cluster 0 (เกษตรกรรม/ชนบท)"]
+    default_f_idx = 0 if active_filter == "ALL" else (1 if active_filter == "2" else (2 if active_filter == "1" else 3))
+
+    curr_dlg_search = st.session_state.get("dlg_table_search", "").strip()
+    curr_dlg_filter = st.session_state.get("dlg_cluster_select", filter_opts[default_f_idx])
+
+    # Pre-filter Data so Top CSV button always matches current filter
+    dlg_df = df_all.copy()
+    if "Cluster 2" in curr_dlg_filter:
+        dlg_df = dlg_df[dlg_df["CLUSTER_ID"] == 2]
+    elif "Cluster 1" in curr_dlg_filter:
+        dlg_df = dlg_df[dlg_df["CLUSTER_ID"] == 1]
+    elif "Cluster 0" in curr_dlg_filter:
+        dlg_df = dlg_df[dlg_df["CLUSTER_ID"] == 0]
+
+    if curr_dlg_search:
+        dlg_df = dlg_df[dlg_df["PROVINCE_CLEAN"].str.contains(curr_dlg_search)]
+
+    score_col = "EV_SCORE" if is_ev_mode else "SOLAR_SCORE"
+    dlg_df = dlg_df.sort_values(by=score_col, ascending=False)
+
+    # Top Header Bar: Subtitle on Left | CSV Download Button on Right (next to X close button)
+    d_hdr_left, d_hdr_right = st.columns([7.2, 4.8])
+    with d_hdr_left:
+        st.markdown(
+            f"<p style='color:{text_sub}; font-size:13px; margin:6px 0 0 0;'>"
+            f"แสดงข้อมูลผลลัพธ์การจัดกลุ่มและการวิเคราะห์เจาะลึก (<b>{len(dlg_df)}</b> จาก 77 จังหวัด)</p>",
+            unsafe_allow_html=True
+        )
+    with d_hdr_right:
+        dlg_csv = dlg_df.to_csv(index=False).encode('utf-8-sig')
+        st.download_button(
+            label="📥 ดาวน์โหลดข้อมูลตารางนี้ (CSV)",
+            data=dlg_csv,
+            file_name=f"thailand_green_energy_full_{'ev' if is_ev_mode else 'solar'}.csv",
+            mime="text/csv",
+            key="btn_dlg_download",
+            use_container_width=True
+        )
+
     # Dialog Filters
     d_c1, d_c2 = st.columns([7, 5])
     with d_c1:
-        dlg_search = st.text_input("ค้นหาจังหวัด:", placeholder="🔍 พิมพ์ชื่อจังหวัด เช่น นนทบุรี, ระยอง, เชียงใหม่...", key="dlg_table_search", label_visibility="collapsed")
+        st.text_input("ค้นหาจังหวัด:", placeholder="🔍 พิมพ์ชื่อจังหวัด เช่น นนทบุรี, ระยอง, เชียงใหม่...", key="dlg_table_search", label_visibility="collapsed")
     with d_c2:
-        filter_opts = ["ทั้งหมด", "Cluster 2 (อุตสาหกรรม/มหานคร)", "Cluster 1 (ท่องเที่ยว/บริการ)", "Cluster 0 (เกษตรกรรม/ชนบท)"]
-        default_f_idx = 0 if active_filter == "ALL" else (1 if active_filter == "2" else (2 if active_filter == "1" else 3))
-        dlg_filter = st.selectbox("กรองกลุ่ม:", options=filter_opts, index=default_f_idx, key="dlg_cluster_select", label_visibility="collapsed")
-    
-    # Filter Data
-    dlg_df = df_all.copy()
-    if "Cluster 2" in dlg_filter:
-        dlg_df = dlg_df[dlg_df["CLUSTER_ID"] == 2]
-    elif "Cluster 1" in dlg_filter:
-        dlg_df = dlg_df[dlg_df["CLUSTER_ID"] == 1]
-    elif "Cluster 0" in dlg_filter:
-        dlg_df = dlg_df[dlg_df["CLUSTER_ID"] == 0]
-        
-    if dlg_search and dlg_search.strip():
-        dlg_df = dlg_df[dlg_df["PROVINCE_CLEAN"].str.contains(dlg_search.strip())]
-        
-    score_col = "EV_SCORE" if is_ev_mode else "SOLAR_SCORE"
-    dlg_df = dlg_df.sort_values(by=score_col, ascending=False)
+        st.selectbox("กรองกลุ่ม:", options=filter_opts, index=default_f_idx, key="dlg_cluster_select", label_visibility="collapsed")
     
     if is_ev_mode:
         dlg_cols = ["PROVINCE_CLEAN", "CLUSTER_ID", "EV_SCORE", "EV_TIER", "CHARGER_TECH", "TARGET_LOCATIONS"]
@@ -669,21 +682,7 @@ def show_full_table_dialog():
     view_df = dlg_df[[c for c in dlg_cols if c in dlg_df.columns]].rename(columns=dlg_rename)
     view_df.index = np.arange(1, len(view_df) + 1)
     
-    st.dataframe(view_df, use_container_width=True, height=520)
-    
-    d_foot1, d_foot2 = st.columns([6, 6])
-    with d_foot1:
-        st.caption(f"แสดง {len(view_df)} จาก 77 จังหวัด")
-    with d_foot2:
-        dlg_csv = dlg_df.to_csv(index=False).encode('utf-8-sig')
-        st.download_button(
-            label="📥 ดาวน์โหลดข้อมูลตารางนี้ (CSV)",
-            data=dlg_csv,
-            file_name=f"thailand_green_energy_full_{'ev' if is_ev_mode else 'solar'}.csv",
-            mime="text/csv",
-            key="btn_dlg_download",
-            use_container_width=True
-        )
+    st.dataframe(view_df, use_container_width=True, height=520, key="dialog_ranking_table")
 
 # 8. Main 2-Column Section (Table on Left, Deep Dive & Charts on Right)
 col_left, col_right = st.columns([5, 7])
