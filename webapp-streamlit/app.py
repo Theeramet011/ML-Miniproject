@@ -327,14 +327,70 @@ st.markdown(f"""
         width: 100% !important;
     }}
 
-    /* Table Quick Tool Buttons under Toggle Switch */
-    div.st-key-btn_toggle_tbl_expand button,
-    div.st-key-btn_quick_csv button {{
-        font-size: 12px !important;
-        padding: 4px 6px !important;
-        height: 32px !important;
-        border-radius: 6px !important;
-        font-weight: 500 !important;
+    /* Table Quick Tool Button under Toggle Switch */
+    div.st-key-btn_open_full_table,
+    div.st-key-btn_open_full_table button {{
+        width: 100% !important;
+        font-size: 13px !important;
+        padding: 5px 12px !important;
+        height: 36px !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        margin-top: 4px !important;
+    }}
+
+    /* Main Menu 3-Dots Popover (Fix: Make 3-dots dropdown menu dark in dark mode) */
+    div[data-testid="stMainMenuPopover"],
+    .stMainMenuPopover,
+    div[data-testid="stMainMenuPopover"] > div,
+    ul[data-testid="stMainMenuList"] {{
+        background-color: {bg_card} !important;
+        color: {text_main} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 12px !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+    }}
+
+    div[data-testid="stMainMenuPopover"] li,
+    div[data-testid="stMainMenuPopover"] [role="menuitem"],
+    div[data-testid="stMainMenuPopover"] div[data-testid="stMainMenuItemLabel"],
+    div[data-testid="stMainMenuPopover"] span,
+    div[data-testid="stMainMenuPopover"] p {{
+        background-color: transparent !important;
+        color: {text_main} !important;
+    }}
+
+    div[data-testid="stMainMenuPopover"] li:hover,
+    div[data-testid="stMainMenuPopover"] [role="menuitem"]:hover {{
+        background-color: {'#1d2433' if is_dark else '#e2e8f0'} !important;
+        color: #10b981 !important;
+    }}
+
+    div[data-testid="stMainMenuPopover"] hr,
+    div[data-testid="stMainMenuDivider"] {{
+        border-color: {border_color} !important;
+    }}
+
+    /* Modal Dialog (st.dialog) Dark Theme Styling */
+    div[role="dialog"],
+    div[data-testid="stModal"],
+    div[data-baseweb="modal"],
+    div[data-baseweb="modal"] > div {{
+        background-color: {bg_card} !important;
+        color: {text_main} !important;
+        border-radius: 16px !important;
+        border: 1px solid {border_color} !important;
+    }}
+
+    div[role="dialog"] [data-testid="stModalHeader"],
+    div[role="dialog"] h2,
+    div[role="dialog"] h3 {{
+        color: {text_main} !important;
+        font-weight: 700 !important;
+    }}
+
+    div[role="dialog"] button[aria-label="Close"] svg {{
+        fill: {text_main} !important;
     }}
 
     /* Hide Streamlit's Internal Floating Toolbar Completely */
@@ -560,7 +616,76 @@ with col_kpi4:
 
 st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
-# 7. Main 2-Column Section (Table on Left, Deep Dive & Charts on Right)
+# 7. Modal Dialog for Full Table View (รูปแบบ A: ตารางจอใหญ่เต็มตา)
+@st.dialog("📋 ตารางจัดอันดับความคุ้มค่า 77 จังหวัด (ฉบับเต็ม)", width="large")
+def show_full_table_dialog():
+    st.markdown(f"<p style='color:{text_muted}; font-size:13px; margin:0 0 12px 0;'>แสดงข้อมูลผลลัพธ์การจัดกลุ่มและการวิเคราะห์เจาะลึก 77 จังหวัดแบบกว้างเต็มหน้าจอ</p>", unsafe_allow_html=True)
+    
+    # Dialog Filters
+    d_c1, d_c2 = st.columns([7, 5])
+    with d_c1:
+        dlg_search = st.text_input("ค้นหาจังหวัด:", placeholder="🔍 พิมพ์ชื่อจังหวัด เช่น นนทบุรี, ระยอง, เชียงใหม่...", key="dlg_table_search", label_visibility="collapsed")
+    with d_c2:
+        filter_opts = ["ทั้งหมด", "Cluster 2 (อุตสาหกรรม/มหานคร)", "Cluster 1 (ท่องเที่ยว/บริการ)", "Cluster 0 (เกษตรกรรม/ชนบท)"]
+        default_f_idx = 0 if active_filter == "ALL" else (1 if active_filter == "2" else (2 if active_filter == "1" else 3))
+        dlg_filter = st.selectbox("กรองกลุ่ม:", options=filter_opts, index=default_f_idx, key="dlg_cluster_select", label_visibility="collapsed")
+    
+    # Filter Data
+    dlg_df = df_all.copy()
+    if "Cluster 2" in dlg_filter:
+        dlg_df = dlg_df[dlg_df["CLUSTER_ID"] == 2]
+    elif "Cluster 1" in dlg_filter:
+        dlg_df = dlg_df[dlg_df["CLUSTER_ID"] == 1]
+    elif "Cluster 0" in dlg_filter:
+        dlg_df = dlg_df[dlg_df["CLUSTER_ID"] == 0]
+        
+    if dlg_search and dlg_search.strip():
+        dlg_df = dlg_df[dlg_df["PROVINCE_CLEAN"].str.contains(dlg_search.strip())]
+        
+    score_col = "EV_SCORE" if is_ev_mode else "SOLAR_SCORE"
+    dlg_df = dlg_df.sort_values(by=score_col, ascending=False)
+    
+    if is_ev_mode:
+        dlg_cols = ["PROVINCE_CLEAN", "CLUSTER_ID", "EV_SCORE", "EV_TIER", "CHARGER_TECH", "TARGET_LOCATIONS"]
+        dlg_rename = {
+            "PROVINCE_CLEAN": "จังหวัด",
+            "CLUSTER_ID": "กลุ่ม",
+            "EV_SCORE": "คะแนน EV",
+            "EV_TIER": "ระดับความพร้อม",
+            "CHARGER_TECH": "หัวชาร์จแนะนำ",
+            "TARGET_LOCATIONS": "ทำเลเป้าหมายหลัก"
+        }
+    else:
+        dlg_cols = ["PROVINCE_CLEAN", "CLUSTER_ID", "SOLAR_SCORE", "SOLAR_PAYBACK_YEARS", "ELEC_PER_HOUSE", "SOLAR_REC"]
+        dlg_rename = {
+            "PROVINCE_CLEAN": "จังหวัด",
+            "CLUSTER_ID": "กลุ่ม",
+            "SOLAR_SCORE": "คะแนน Solar",
+            "SOLAR_PAYBACK_YEARS": "คืนทุน (ปี)",
+            "ELEC_PER_HOUSE": "ค่าไฟบ้าน (kWh)",
+            "SOLAR_REC": "คำแนะนำการติดตั้ง"
+        }
+        
+    view_df = dlg_df[[c for c in dlg_cols if c in dlg_df.columns]].rename(columns=dlg_rename)
+    view_df.index = np.arange(1, len(view_df) + 1)
+    
+    st.dataframe(view_df, use_container_width=True, height=520)
+    
+    d_foot1, d_foot2 = st.columns([6, 6])
+    with d_foot1:
+        st.caption(f"แสดง {len(view_df)} จาก 77 จังหวัด")
+    with d_foot2:
+        dlg_csv = dlg_df.to_csv(index=False).encode('utf-8-sig')
+        st.download_button(
+            label="📥 ดาวน์โหลดข้อมูลตารางนี้ (CSV)",
+            data=dlg_csv,
+            file_name=f"thailand_green_energy_full_{'ev' if is_ev_mode else 'solar'}.csv",
+            mime="text/csv",
+            key="btn_dlg_download",
+            use_container_width=True
+        )
+
+# 8. Main 2-Column Section (Table on Left, Deep Dive & Charts on Right)
 col_left, col_right = st.columns([5, 7])
 
 # ---------- LEFT COLUMN: Table & Cluster Filter Pills ----------
@@ -581,23 +706,8 @@ with col_left:
             st.session_state["show_table_tools"] = toggle_val
             st.rerun()
         if show_tools:
-            t_col1, t_col2 = st.columns(2)
-            with t_col1:
-                is_full = st.session_state.get("table_full_view", False)
-                if st.button("⛶ ขยาย" if not is_full else "📐 ย่อ", key="btn_toggle_tbl_expand", use_container_width=True, help="สลับขยายความสูงตาราง"):
-                    st.session_state["table_full_view"] = not is_full
-                    st.rerun()
-            with t_col2:
-                csv_bytes = df_display.to_csv(index=False).encode('utf-8-sig')
-                st.download_button(
-                    label="📥 CSV",
-                    data=csv_bytes,
-                    file_name=f"thailand_green_energy_ranking_{'ev' if is_ev_mode else 'solar'}.csv",
-                    mime="text/csv",
-                    key="btn_quick_csv",
-                    use_container_width=True,
-                    help="ดาวน์โหลดข้อมูลตารางนี้ทันที"
-                )
+            if st.button("⛶ ดูตารางเต็มจอ", key="btn_open_full_table", use_container_width=True, help="เปิดดูข้อมูลทั้งหมด 77 จังหวัดแบบกว้างเต็มหน้าจอ"):
+                show_full_table_dialog()
 
     # Search Box
     search_query = st.text_input("ค้นหาชื่อจังหวัด:", placeholder="🔍 ค้นหา เช่น นนทบุรี, ระยอง, เชียงใหม่...", label_visibility="collapsed", key="table_search_input")
@@ -645,9 +755,7 @@ with col_left:
 
     table_df = df_display[show_cols].rename(columns=rename_dict)
     table_df.index = np.arange(1, len(table_df) + 1)
-    is_full = st.session_state.get("table_full_view", False)
-    tbl_h = 760 if is_full else 480
-    st.dataframe(table_df, use_container_width=True, height=tbl_h, key="main_ranking_table")
+    st.dataframe(table_df, use_container_width=True, height=480, key="main_ranking_table")
 
     st.markdown("<div style='height: 24px; clear: both; display: block;'></div>", unsafe_allow_html=True)
 
