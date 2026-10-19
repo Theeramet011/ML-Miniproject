@@ -530,8 +530,9 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-# 3. Load & Cache Dataset
-@st.cache_data
+# 3. Load Dataset (77 rows - computed dynamically without stale cache)
+st.cache_data.clear()
+
 def load_data():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     csv_file = os.path.join(base_dir, "clustered_provinces_2563.csv")
