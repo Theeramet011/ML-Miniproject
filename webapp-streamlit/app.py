@@ -316,6 +316,19 @@ st.markdown(f"""
         display: block !important;
     }}
 
+    /* Fullscreen Wrapper & Plotly Fullscreen Dark Mode Background (without overriding table height) */
+    div[data-testid="stFullScreenFrame"],
+    div[data-testid="stFullScreenFrame"]:fullscreen,
+    div[data-testid="stPlotlyChart"],
+    div[data-testid="stPlotlyChart"]:fullscreen,
+    .js-plotly-plot:fullscreen,
+    .plotly:fullscreen,
+    :fullscreen,
+    ::backdrop {{
+        background: {bg_card} !important;
+        background-color: {bg_card} !important;
+    }}
+
     div[data-testid="stDataFrame"] {{
         border-radius: 10px !important;
         border: 1px solid {border_color} !important;
