@@ -832,7 +832,7 @@ with col_right:
     # Sub-tabs for Charts and Simulation
     tab_radar, tab_bar, tab_whatif, tab_pca = st.tabs([
         "🕸️ เรดาร์เปรียบเทียบ",
-        "🏆 Top 10 กราฟแท่ง",
+        "🏆 กราฟแท่งจัดอันดับ",
         "💡 แบบจำลอง What-If",
         "🗺️ PCA 2D"
     ])
@@ -892,33 +892,66 @@ with col_right:
         st.plotly_chart(fig_radar, use_container_width=True)
 
     with tab_bar:
-        top10_df = df_filtered.head(10).copy()
+        target_cluster = prov_row["CLUSTER_ID"]
         score_col = "EV_SCORE" if is_ev_mode else "SOLAR_SCORE"
         score_label = "คะแนนความพร้อม EV" if is_ev_mode else "คะแนนศักยภาพโซลาร์"
 
-        fig_bar = px.bar(
-            top10_df,
-            x=score_col,
-            y="PROVINCE_CLEAN",
-            orientation="h",
-            color="CLUSTER_ID",
-            color_discrete_map={2: "#10b981", 1: "#3b82f6", 0: "#f59e0b"},
-            labels={score_col: score_label, "PROVINCE_CLEAN": "จังหวัด", "CLUSTER_ID": "Cluster"},
-            text=score_col
+        # ดึงทุกจังหวัดในกลุ่มเดียวกับจังหวัดที่เลือก เรียงลำดับจากคะแนนสูงสุดลงมา
+        cluster_df = df_all[df_all["CLUSTER_ID"] == target_cluster].sort_values(by=score_col, ascending=False).copy()
+        
+        cluster_info_names = {
+            2: "Cluster 2: ศูนย์กลางเศรษฐกิจและอุตสาหกรรม (13 จังหวัด)",
+            1: "Cluster 1: เมืองศูนย์กลางภูมิภาคและท่องเที่ยว (32 จังหวัด)",
+            0: "Cluster 0: เกษตรกรรมและชุมชนชนบท (32 จังหวัด)"
+        }
+        
+        st.markdown(
+            f"<div style='font-size:13px; color:{text_sub}; margin-bottom:10px;'>"
+            f"เปรียบเทียบอันดับในกลุ่ม <b>{cluster_info_names.get(target_cluster, '')}</b> "
+            f"โดยแท่งสีเขียวมรกต <span style='color:#10b981; font-weight:700;'>■ {prov_row['PROVINCE_CLEAN']}</span> คือจังหวัดที่คุณกำลังวิเคราะห์"
+            f"</div>",
+            unsafe_allow_html=True
         )
+
+        # กำหนดสีแท่ง: จังหวัดที่เลือกจะใช้สีเขียวมรกตเด่นชัด (#10b981) ส่วนจังหวัดอื่นในกลุ่มจะใช้โทนสีของคลัสเตอร์
+        cluster_base_colors = {
+            2: "rgba(59, 130, 246, 0.45)",
+            1: "rgba(14, 165, 233, 0.45)",
+            0: "rgba(245, 158, 11, 0.45)"
+        }
+        base_c = cluster_base_colors.get(target_cluster, "rgba(100, 116, 139, 0.45)")
+        highlight_c = "#10b981"
+
+        bar_colors = [highlight_c if p == prov_row["PROVINCE_CLEAN"] else base_c for p in cluster_df["PROVINCE_CLEAN"]]
+        border_colors = [highlight_c if p == prov_row["PROVINCE_CLEAN"] else "rgba(255, 255, 255, 0.15)" for p in cluster_df["PROVINCE_CLEAN"]]
+        border_widths = [2.5 if p == prov_row["PROVINCE_CLEAN"] else 1 for p in cluster_df["PROVINCE_CLEAN"]]
+        text_colors = [highlight_c if p == prov_row["PROVINCE_CLEAN"] else text_sub for p in cluster_df["PROVINCE_CLEAN"]]
+
+        fig_bar = go.Figure(go.Bar(
+            x=cluster_df[score_col],
+            y=cluster_df["PROVINCE_CLEAN"],
+            orientation="h",
+            marker=dict(
+                color=bar_colors,
+                line=dict(color=border_colors, width=border_widths)
+            ),
+            text=cluster_df[score_col],
+            textposition='outside',
+            textfont=dict(size=11, color=text_colors, family="Kanit")
+        ))
+
+        # Dynamic Height ตามจำนวนจังหวัด: C2 (~420px), C1/C0 (~860px)
+        chart_height = max(420, len(cluster_df) * 27)
+
         fig_bar.update_layout(
-            yaxis=dict(autorange="reversed", color=text_sub),
-            xaxis=dict(color=text_sub, gridcolor=plotly_grid),
+            yaxis=dict(autorange="reversed", color=text_sub, tickfont=dict(size=12, family="Kanit")),
+            xaxis=dict(color=text_sub, gridcolor=plotly_grid, range=[0, max(cluster_df[score_col].max() + 10, 100)]),
             paper_bgcolor=bg_card,
             plot_bgcolor=bg_card,
             font=dict(family="Kanit", color=text_main),
-            height=360,
-            margin=dict(l=0, r=0, t=10, b=0),
+            height=chart_height,
+            margin=dict(l=0, r=40, t=10, b=10),
             showlegend=False
-        )
-        fig_bar.update_traces(
-            textposition='outside',
-            textfont=dict(size=11, color="#10b981")
         )
         st.plotly_chart(fig_bar, use_container_width=True)
 
