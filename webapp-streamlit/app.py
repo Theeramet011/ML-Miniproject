@@ -1010,7 +1010,18 @@ with col_right:
                 "Cluster 0: เกษตรกรรมและชุมชนชนบท (Rural & Agricultural)": "#f59e0b"
             }
         )
-        fig_pca.update_traces(marker=dict(size=10, line=dict(width=1, color='#ffffff')))
+        fig_pca.update_traces(
+            marker=dict(size=10, line=dict(width=1, color='#ffffff')),
+            hovertemplate=(
+                "<b>📍 %{hovertext}</b><br><br>"
+                "• <b>PC1 (ความเป็นเมือง/พลังงาน):</b> %{x:.2f}<br>"
+                "• <b>PC2 (ความเข้มข้นอุตสาหกรรม):</b> %{y:.2f}<br>"
+                "• <b>ค่าไฟบ้าน/หลัง:</b> %{customdata[0]:,.0f} kWh<br>"
+                "• <b>สัดส่วนไฟโรงงาน:</b> %{customdata[1]:.1f}%<br>"
+                "• <b>คะแนนความพร้อม EV:</b> %{customdata[2]:.1f} คะแนน"
+                "<extra></extra>"
+            )
+        )
         fig_pca.update_layout(
             paper_bgcolor=bg_card,
             plot_bgcolor=bg_card,
