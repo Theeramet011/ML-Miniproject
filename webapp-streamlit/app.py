@@ -986,7 +986,13 @@ with col_right:
             )
 
     with tab_pca:
-        st.caption("แสดงพิกัดของทั้ง 77 จังหวัดในมิติ PCA ที่ลดรูปมาจาก 4 ตัวแปรหลัก")
+        st.markdown(f"""
+            <div style='background-color:{bg_card_inner}; border:1px solid {border_color}; border-radius:8px; padding:10px 14px; margin-bottom:10px; font-size:12px; line-height:1.6; color:{text_sub};'>
+                💡 <b>คำอธิบายความหมายของแกน PCA:</b><br/>
+                • <b>แกนนอน: PC1 (74.1%)</b> — <i>"แกนความเป็นเมืองและระดับการบริโภคพลังงาน"</i> (ขวาสุด = เมืองใหญ่/ใช้ไฟบ้านและไฟคนสูงมาก เช่น กทม., นนทบุรี, ระยอง / ซ้ายสุด = เกษตรกรรม/ชนบท)<br/>
+                • <b>แกนตั้ง: PC2 (15.9%)</b> — <i>"แกนความเข้มข้นของภาคอุตสาหกรรม"</i> (บนสุด = สัดส่วนไฟโรงงานสูงมาก เช่น ระยอง, อยุธยา / ล่างสุด = เน้นที่อยู่อาศัยและพาณิชย์ เช่น กทม., นนทบุรี, ภูเก็ต)
+            </div>
+        """, unsafe_allow_html=True)
         fig_pca = px.scatter(
             df_all,
             x="PCA1",
@@ -994,7 +1000,10 @@ with col_right:
             color="CLUSTER_NAME",
             hover_name="PROVINCE_CLEAN",
             hover_data={"ELEC_PER_HOUSE": True, "IND_ELEC_RATIO": True, "EV_SCORE": True, "CLUSTER_NAME": False},
-            labels={"PCA1": "PC1 (74.1%)", "PCA2": "PC2 (15.9%)"},
+            labels={
+                "PCA1": "แกนนอน: PC1 (74.1%) — แกนความเป็นเมืองและระดับการบริโภคพลังงาน",
+                "PCA2": "แกนตั้ง: PC2 (15.9%) — แกนความเข้มข้นของภาคอุตสาหกรรม"
+            },
             color_discrete_map={
                 "Cluster 2: ศูนย์กลางเศรษฐกิจและอุตสาหกรรม (Industrial & Metropolitan Hub)": "#10b981",
                 "Cluster 1: เมืองศูนย์กลางภูมิภาคและท่องเที่ยว (Urban & Tourism Hub)": "#3b82f6",
@@ -1006,10 +1015,26 @@ with col_right:
             paper_bgcolor=bg_card,
             plot_bgcolor=bg_card,
             font=dict(family="Kanit", color=text_main),
-            xaxis=dict(gridcolor=plotly_grid, color=text_muted),
-            yaxis=dict(gridcolor=plotly_grid, color=text_muted),
-            height=360,
-            margin=dict(l=20, r=20, t=10, b=10),
-            legend=dict(orientation="h", y=-0.2, font=dict(color=text_main))
+            xaxis=dict(
+                title=dict(
+                    text="แกนนอน: PC1 (74.1%) — แกนความเป็นเมืองและระดับการบริโภคพลังงาน",
+                    font=dict(size=12, family="Kanit", color=text_sub)
+                ),
+                gridcolor=plotly_grid,
+                color=text_muted,
+                automargin=True
+            ),
+            yaxis=dict(
+                title=dict(
+                    text="แกนตั้ง: PC2 (15.9%) — แกนความเข้มข้นของภาคอุตสาหกรรม",
+                    font=dict(size=12, family="Kanit", color=text_sub)
+                ),
+                gridcolor=plotly_grid,
+                color=text_muted,
+                automargin=True
+            ),
+            height=400,
+            margin=dict(l=30, r=30, t=10, b=20),
+            legend=dict(orientation="h", y=-0.32, font=dict(color=text_main, size=11))
         )
         st.plotly_chart(fig_pca, use_container_width=True)
